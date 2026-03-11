@@ -1,0 +1,28 @@
+---
+interface Props {
+  chinese: string;
+  pinyin: string;
+  definition?: string;
+  glossarySlug?: string;
+}
+
+const { chinese, pinyin, definition, glossarySlug } = Astro.props;
+const Tag = glossarySlug ? 'a' : 'span';
+const attrs = glossarySlug ? { href: `/glossary/${glossarySlug}` } : {};
+---
+
+<Tag
+  {...attrs}
+  class="cn-term-wrapper inline-flex items-baseline gap-0.5 relative group"
+  data-definition={definition}
+>
+  <span class="cn-term">{chinese}</span>
+  <span class="cn-pinyin">({pinyin})</span>
+
+  {definition && (
+    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm font-ui bg-ink-900 dark:bg-ink-100 text-ink-50 dark:text-ink-900 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 max-w-xs text-center">
+      {definition}
+      <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-ink-900 dark:border-t-ink-100"></span>
+    </span>
+  )}
+</Tag>

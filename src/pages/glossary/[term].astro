@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('glossary');
+  return entries.map(entry => ({
+    params: { term: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={`${entry.data.chinese} (${entry.data.pinyin}) — ${entry.data.title}`} description={entry.data.short_definition}>
+  <div class="container-article py-12">
+    {/* Breadcrumb */}
+    <nav class="flex items-center gap-2 text-sm font-ui text-ink-400 dark:text-ink-500 mb-8">
+      <a href="/" class="hover:text-vermilion transition-colors">Home</a>
+      <span>/</span>
+      <a href="/glossary" class="hover:text-vermilion transition-colors">Glossary</a>
+      <span>/</span>
+      <span class="text-ink-600 dark:text-ink-300">{entry.data.chinese}</span>
+    </nav>
+
+    {/* Header */}
+    <header class="mb-8">
+      <div class="font-chinese text-6xl md:text-8xl text-ink-200 dark:text-ink-800 mb-2 select-none" aria-hidden="true">
+        {entry.data.chinese}
+      </div>
+      <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50">
+        {entry.data.chinese} <span class="text-ink-400 font-normal italic">({entry.data.pinyin})</span>
+      </h1>
+      <p class="mt-1 text-lg text-ink-500 dark:text-ink-400">
+        Literally: "{entry.data.literal}"
+      </p>
+      <p class="mt-3 text-xl text-ink-700 dark:text-ink-300 leading-relaxed">
+        {entry.data.short_definition}
+      </p>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="px-2.5 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-600 dark:text-ink-400 capitalize">
+          {entry.data.category}
+        </span>
+        {entry.data.tags?.map(tag => (
+          <span class="px-2.5 py-0.5 text-xs font-ui rounded-full bg-ink-100 dark:bg-ink-800 text-ink-500 dark:text-ink-400">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </header>
+
+    {/* Content */}
+    <div class="prose dark:prose-invert">
+      <Content />
+    </div>
+
+    {/* Related terms */}
+    {entry.data.related_terms && entry.data.related_terms.length > 0 && (
+      <div class="mt-12 pt-8 border-t border-ink-200 dark:border-ink-800">
+        <h3 class="text-sm font-ui font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400 mb-3">
+          Related Terms
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          {entry.data.related_terms.map(term => (
+            <a
+              href={`/glossary/${term}`}
+              class="px-3 py-1.5 text-sm font-ui rounded-lg border border-ink-200 dark:border-ink-700 text-ink-600 dark:text-ink-400 hover:border-vermilion hover:text-vermilion transition-colors"
+            >
+              {term}
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>

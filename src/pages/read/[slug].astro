@@ -1,0 +1,30 @@
+---
+import { getCollection, render } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('deep-dives');
+  return articles.map(article => ({
+    params: { slug: article.id },
+    props: { article },
+  }));
+}
+
+const { article } = Astro.props;
+const { Content } = await render(article);
+---
+
+<ArticleLayout
+  title={article.data.title}
+  subtitle={article.data.subtitle}
+  summary={article.data.summary}
+  pillar={article.data.pillar}
+  date={article.data.date}
+  readingTime={article.data.reading_time}
+  coverImage={article.data.cover_image}
+  tags={article.data.tags}
+  sources={article.data.sources}
+  series={article.data.series}
+>
+  <Content />
+</ArticleLayout>

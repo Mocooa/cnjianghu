@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/content/ArticleCard.astro';
+import { pillars } from '../../utils/pillars';
+import { getCollection } from 'astro:content';
+
+export function getStaticPaths() {
+  return pillars.map(p => ({
+    params: { pillar: p.slug },
+    props: { pillar: p },
+  }));
+}
+
+const { pillar } = Astro.props;
+const articles = await getCollection('deep-dives', ({ data }) =>
+  !data.draft && data.pillar === pillar.slug
+);
+const sorted = articles.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title={pillar.name} description={pillar.description}>
+  <div class="container-wide py-12">
+    {/* Breadcrumb */}
+    <nav class="flex items-center gap-2 text-sm font-ui text-ink-400 dark:text-ink-500 mb-6">
+      <a href="/" class="hover:text-vermilion transition-colors">Home</a>
+      <span>/</span>
+      <a href="/explore" class="hover:text-vermilion transition-colors">Explore</a>
+      <span>/</span>
+      <span style={`color: var(--color-${pillar.color})`}>{pillar.name}</span>
+    </nav>
+
+    <div class="flex items-start gap-4 mb-10">
+      <span class="text-4xl">{pillar.icon}</span>
+      <div>
+        <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50">
+          {pillar.name}
+        </h1>
+        <span class="text-lg font-chinese text-ink-400 dark:text-ink-500">{pillar.chinese}</span>
+        <p class="mt-2 text-ink-500 dark:text-ink-400 max-w-xl">{pillar.description}</p>
+      </div>
+    </div>
+
+    {sorted.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sorted.map(article => (
+          <ArticleCard
+            title={article.data.title}
+            summary={article.data.summary}
+            slug={article.id}
+            pillar={article.data.pillar}
+            date={article.data.date}
+            readingTime={article.data.reading_time}
+            coverImage={article.data.cover_image}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-16">
+        <div class="text-5xl mb-4">{pillar.icon}</div>
+        <p class="text-ink-400 dark:text-ink-500">
+          Articles about {pillar.name.toLowerCase()} are coming soon.
+        </p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

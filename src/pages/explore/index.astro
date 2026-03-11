@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/content/ArticleCard.astro';
+import PillarGrid from '../../components/home/PillarGrid.astro';
+import { getCollection } from 'astro:content';
+
+const allArticles = await getCollection('deep-dives', ({ data }) => !data.draft);
+const sorted = allArticles.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="Explore" description="Browse all articles about Chinese culture">
+  <div class="container-wide py-12">
+    <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 mb-2">
+      Explore
+    </h1>
+    <p class="text-ink-500 dark:text-ink-400 mb-10 max-w-2xl">
+      Deep dives into Chinese culture — from internet memes to ancient philosophy, street food to space tech.
+    </p>
+
+    {sorted.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sorted.map((article, i) => (
+          <ArticleCard
+            title={article.data.title}
+            summary={article.data.summary}
+            slug={article.id}
+            pillar={article.data.pillar}
+            date={article.data.date}
+            readingTime={article.data.reading_time}
+            coverImage={article.data.cover_image}
+            featured={i === 0}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-16">
+        <p class="text-ink-400 dark:text-ink-500">Articles coming soon. Explore by pillar below.</p>
+      </div>
+    )}
+  </div>
+
+  <div class="border-t border-ink-200 dark:border-ink-800">
+    <PillarGrid />
+  </div>
+</BaseLayout>

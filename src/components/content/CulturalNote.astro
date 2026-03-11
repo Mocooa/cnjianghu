@@ -1,0 +1,14 @@
+---
+interface Props {
+  label?: string;
+}
+
+const { label = 'Cultural Context' } = Astro.props;
+---
+
+<aside class="cultural-note">
+  <div class="cultural-note-label">{label}</div>
+  <div class="text-ink-700 dark:text-ink-300">
+    <slot />
+  </div>
+</aside>

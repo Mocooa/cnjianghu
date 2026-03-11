@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const entries = await getCollection('glossary', ({ data }) => !data.draft);
+const sorted = entries.sort((a, b) => a.data.pinyin.localeCompare(b.data.pinyin));
+
+const categories = [...new Set(entries.map(e => e.data.category))].sort();
+---
+
+<BaseLayout title="Cultural Glossary" description="A living dictionary of Chinese cultural concepts, decoded for the curious.">
+  <div class="container-wide py-12">
+    <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 mb-2">
+      Cultural Glossary
+    </h1>
+    <p class="text-ink-500 dark:text-ink-400 mb-10 max-w-2xl">
+      Not just translations — cultural decodings. Each entry explains what a concept <em>means</em> in the Chinese worldview.
+    </p>
+
+    {sorted.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {sorted.map(entry => (
+          <a
+            href={`/glossary/${entry.id}`}
+            class="group block p-5 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 hover:shadow-lg hover:border-ink-300 dark:hover:border-ink-700 transition-all"
+          >
+            <div class="flex items-baseline gap-2 mb-1">
+              <span class="text-2xl font-chinese font-semibold text-ink-900 dark:text-ink-50 group-hover:text-vermilion transition-colors">
+                {entry.data.chinese}
+              </span>
+              <span class="text-sm text-ink-400 italic">{entry.data.pinyin}</span>
+            </div>
+            <div class="text-xs font-ui text-ink-400 dark:text-ink-500 mb-2">
+              "{entry.data.literal}"
+            </div>
+            <p class="text-sm text-ink-600 dark:text-ink-400 line-clamp-2">
+              {entry.data.short_definition}
+            </p>
+            <span class="inline-block mt-2 px-2 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-500 dark:text-ink-400 capitalize">
+              {entry.data.category}
+            </span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-16">
+        <div class="text-5xl mb-4">📖</div>
+        <p class="text-ink-400 dark:text-ink-500">Glossary entries coming soon.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

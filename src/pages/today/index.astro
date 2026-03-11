@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const bites = await getCollection('quick-bites', ({ data }) => !data.draft);
+const sorted = bites.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const typeLabels: Record<string, string> = {
+  'word-of-the-day': 'Word of the Day',
+  'visual-china': 'Visual China',
+  'trending': 'Trending Now',
+  'did-you-know': 'Did You Know',
+};
+
+const typeColors: Record<string, string> = {
+  'word-of-the-day': 'vermilion',
+  'visual-china': 'gold',
+  'trending': 'azure',
+  'did-you-know': 'jade',
+};
+---
+
+<BaseLayout title="Today" description="Daily quick bites into Chinese culture — words, visuals, trends, and surprises.">
+  <div class="container-wide py-12">
+    <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 mb-2">
+      Today
+    </h1>
+    <p class="text-ink-500 dark:text-ink-400 mb-10 max-w-2xl">
+      Quick cultural bites — a new word, a trending topic, a visual, or a surprising fact. Every day.
+    </p>
+
+    {sorted.length > 0 ? (
+      <div class="space-y-6">
+        {sorted.map(bite => (
+          <article
+            id={bite.id}
+            class="p-6 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900"
+          >
+            <div class="flex items-center gap-3 mb-3">
+              <span
+                class="text-xs font-ui font-semibold uppercase tracking-wider"
+                style={`color: var(--color-${typeColors[bite.data.type] ?? 'vermilion'})`}
+              >
+                {typeLabels[bite.data.type] ?? bite.data.type}
+              </span>
+              <span class="text-xs text-ink-400 dark:text-ink-500">
+                {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(bite.data.date)}
+              </span>
+            </div>
+
+            {bite.data.chinese_term && (
+              <div class="mb-2">
+                <span class="text-2xl font-chinese font-semibold text-ink-900 dark:text-ink-50">
+                  {bite.data.chinese_term}
+                </span>
+                {bite.data.pinyin && (
+                  <span class="ml-2 text-sm text-ink-400 italic">{bite.data.pinyin}</span>
+                )}
+              </div>
+            )}
+
+            <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50 mb-2">
+              {bite.data.title}
+            </h2>
+
+            <p class="text-ink-600 dark:text-ink-400 leading-relaxed">
+              {bite.data.summary}
+            </p>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-16">
+        <div class="text-5xl mb-4">☀️</div>
+        <p class="text-ink-400 dark:text-ink-500">Today's bites are brewing. Check back soon.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

@@ -1,17 +1,103 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroSection from '../components/home/HeroSection.astro';
+import PillarGrid from '../components/home/PillarGrid.astro';
+import ArticleCard from '../components/content/ArticleCard.astro';
+import { getCollection } from 'astro:content';
 
+// Get latest articles
+const allDeepDives = await getCollection('deep-dives', ({ data }) => !data.draft);
+const latestArticles = allDeepDives
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 4);
+
+const allQuickBites = await getCollection('quick-bites', ({ data }) => !data.draft);
+const latestBites = allQuickBites
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 4);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Home">
+  <HeroSection />
+
+  {/* Latest Quick Bites */}
+  {latestBites.length > 0 && (
+    <section class="py-12 border-t border-ink-200 dark:border-ink-800">
+      <div class="container-wide">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+            Today's Quick Bites
+          </h2>
+          <a href="/today" class="text-sm font-ui text-vermilion hover:underline">
+            View all →
+          </a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {latestBites.map(bite => (
+            <div class="p-4 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+              <span class="text-xs font-ui font-semibold uppercase tracking-wider text-vermilion">
+                {bite.data.type.replace(/-/g, ' ')}
+              </span>
+              <h3 class="mt-1 font-heading font-semibold text-ink-900 dark:text-ink-50 text-base leading-snug">
+                {bite.data.title}
+              </h3>
+              <p class="mt-1 text-sm text-ink-500 dark:text-ink-400 line-clamp-2">
+                {bite.data.summary}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {/* Latest Deep Dives */}
+  {latestArticles.length > 0 && (
+    <section class="py-12 border-t border-ink-200 dark:border-ink-800">
+      <div class="container-wide">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+            Latest Deep Dives
+          </h2>
+          <a href="/explore" class="text-sm font-ui text-vermilion hover:underline">
+            View all →
+          </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {latestArticles.map((article, i) => (
+            <ArticleCard
+              title={article.data.title}
+              summary={article.data.summary}
+              slug={article.id}
+              pillar={article.data.pillar}
+              date={article.data.date}
+              readingTime={article.data.reading_time}
+              coverImage={article.data.cover_image}
+              featured={i === 0}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {/* Pillar Grid (always shown) */}
+  <div class="border-t border-ink-200 dark:border-ink-800">
+    <PillarGrid />
+  </div>
+
+  {/* Empty state for new site */}
+  {latestArticles.length === 0 && latestBites.length === 0 && (
+    <section class="py-16">
+      <div class="container-article text-center">
+        <div class="text-6xl mb-4">📝</div>
+        <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50 mb-2">
+          Content coming soon
+        </h2>
+        <p class="text-ink-500 dark:text-ink-400 max-w-md mx-auto">
+          The jianghu is being built. Check back soon for deep dives into Chinese culture, daily quick bites, and more.
+        </p>
+      </div>
+    </section>
+  )}
+</BaseLayout>

@@ -1,0 +1,85 @@
+---
+import { getPillar } from '../../utils/pillars';
+
+interface Props {
+  title: string;
+  summary: string;
+  slug: string;
+  pillar: string;
+  date: Date;
+  readingTime?: number;
+  coverImage?: string;
+  format?: 'deep-dive' | 'quick-bite';
+  featured?: boolean;
+}
+
+const {
+  title,
+  summary,
+  slug,
+  pillar,
+  date,
+  readingTime,
+  coverImage,
+  format = 'deep-dive',
+  featured = false,
+} = Astro.props;
+
+const pillarData = getPillar(pillar);
+const formattedDate = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+}).format(date);
+
+const href = format === 'quick-bite' ? `/today#${slug}` : `/read/${slug}`;
+---
+
+<article class:list={[
+  'group rounded-xl overflow-hidden border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 transition-all hover:shadow-lg hover:border-ink-300 dark:hover:border-ink-700',
+  featured && 'md:col-span-2',
+]}>
+  <a href={href} class="block">
+    {coverImage && (
+      <div class:list={[
+        'overflow-hidden',
+        featured ? 'h-64' : 'h-44',
+      ]}>
+        <img
+          src={coverImage}
+          alt={title}
+          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+        />
+      </div>
+    )}
+
+    <div class="p-5">
+      {/* Pillar badge */}
+      {pillarData && (
+        <span
+          class="inline-block text-xs font-ui font-semibold uppercase tracking-wider mb-2"
+          style={`color: var(--color-${pillarData.color})`}
+        >
+          {pillarData.name}
+        </span>
+      )}
+
+      <h3 class:list={[
+        'font-heading font-semibold text-ink-900 dark:text-ink-50 group-hover:text-vermilion transition-colors leading-snug',
+        featured ? 'text-2xl' : 'text-lg',
+      ]}>
+        {title}
+      </h3>
+
+      <p class="mt-2 text-sm text-ink-500 dark:text-ink-400 line-clamp-2 leading-relaxed">
+        {summary}
+      </p>
+
+      <div class="mt-3 flex items-center gap-3 text-xs font-ui text-ink-400 dark:text-ink-500">
+        <time datetime={date.toISOString()}>{formattedDate}</time>
+        {readingTime && <span>{readingTime} min read</span>}
+      </div>
+    </div>
+  </a>
+</article>
