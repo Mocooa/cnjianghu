@@ -1,0 +1,97 @@
+---
+import CopyTextButton from '../distribution/CopyTextButton';
+import { buildPlausibleClasses } from '../../utils/analytics';
+import { buildRedditShareUrl, buildTrackedUrl, buildXShareUrl } from '../../utils/distribution';
+
+interface Props {
+  title: string;
+  url: string;
+  slug: string;
+}
+
+const { title, url, slug } = Astro.props;
+
+const trackedXUrl = buildTrackedUrl(url, {
+  source: 'x',
+  medium: 'social',
+  campaign: 'article-share',
+  content: slug,
+});
+
+const trackedRedditUrl = buildTrackedUrl(url, {
+  source: 'reddit',
+  medium: 'social',
+  campaign: 'article-share',
+  content: slug,
+});
+
+const xShareUrl = buildXShareUrl({
+  text: title,
+  url: trackedXUrl,
+});
+
+const redditShareUrl = buildRedditShareUrl({
+  title: `${title} | cnjianghu`,
+  url: trackedRedditUrl,
+});
+
+const baseButtonClasses = 'inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2.5 text-sm font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors';
+---
+
+<section class="container-article mt-10 pt-6 border-t border-ink-200 dark:border-ink-800" data-pagefind-ignore>
+  <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+        Distribution
+      </p>
+      <h2 class="mt-2 text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+        Share this story
+      </h2>
+      <p class="mt-1 text-sm text-ink-500 dark:text-ink-400">
+        Use tracked share links so launch traffic shows up cleanly in analytics.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <a
+        href={xShareUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class:list={[
+          baseButtonClasses,
+          buildPlausibleClasses('Share Click', {
+            network: 'x',
+            surface: 'article',
+            item: slug,
+          }),
+        ]}
+      >
+        Share on X
+      </a>
+      <a
+        href={redditShareUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class:list={[
+          baseButtonClasses,
+          buildPlausibleClasses('Share Click', {
+            network: 'reddit',
+            surface: 'article',
+            item: slug,
+          }),
+        ]}
+      >
+        Share on Reddit
+      </a>
+      <CopyTextButton
+        client:load
+        value={url}
+        label="Copy link"
+        successLabel="Link copied"
+        eventName="Copy Link"
+        eventProps={{ surface: 'article', item: slug }}
+        className={baseButtonClasses}
+      />
+    </div>
+  </div>
+</section>

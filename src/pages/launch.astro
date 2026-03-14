@@ -1,0 +1,493 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CopyTextButton from '../components/distribution/CopyTextButton';
+import { buildPlausibleClasses, isAnalyticsEnabled } from '../utils/analytics';
+import { getDeepDiveUrl, getPublishedDeepDives, toAbsoluteUrl } from '../utils/content';
+import { buildRedditShareUrl, buildTrackedUrl, buildXShareUrl } from '../utils/distribution';
+
+const [latestArticle] = await getPublishedDeepDives();
+const analyticsEnabled = isAnalyticsEnabled();
+const googleSiteVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+const searchConsoleEnabled = Boolean(googleSiteVerification);
+const homepageUrl = toAbsoluteUrl('/');
+const strongestArticleUrl = latestArticle ? toAbsoluteUrl(getDeepDiveUrl(latestArticle.id)) : null;
+const sitemapUrl = toAbsoluteUrl('/sitemap.xml');
+const rssUrl = toAbsoluteUrl('/rss.xml');
+
+const readinessItems = [
+  {
+    id: 'plausible',
+    label: 'Plausible analytics',
+    status: analyticsEnabled,
+    envKey: 'PUBLIC_PLAUSIBLE_DOMAIN',
+    detail: analyticsEnabled
+      ? 'Plausible script is active once this build is live on the configured domain.'
+      : 'Create a Plausible site for your production domain, then set PUBLIC_PLAUSIBLE_DOMAIN and redeploy.',
+  },
+  {
+    id: 'search-console',
+    label: 'Google Search Console',
+    status: searchConsoleEnabled,
+    envKey: 'PUBLIC_GOOGLE_SITE_VERIFICATION',
+    detail: searchConsoleEnabled
+      ? 'The verification meta tag will be emitted in the site head on every page.'
+      : 'Use Search Console HTML tag verification, copy the content token, and set PUBLIC_GOOGLE_SITE_VERIFICATION.',
+  },
+  {
+    id: 'sitemap',
+    label: 'Sitemap',
+    status: true,
+    href: sitemapUrl,
+    detail: 'Submit the main sitemap after Search Console verification.',
+  },
+  {
+    id: 'rss',
+    label: 'RSS feed',
+    status: true,
+    href: rssUrl,
+    detail: 'Keep this handy for feed readers, syndication, and RSS-to-email tools.',
+  },
+];
+
+const activationSteps = [
+  'Create a Plausible site for the production domain you actually want to measure.',
+  'Set PUBLIC_PLAUSIBLE_DOMAIN in Vercel project environment variables, then redeploy.',
+  'Add the site to Google Search Console using the HTML tag method.',
+  'Set PUBLIC_GOOGLE_SITE_VERIFICATION to the provided token, then redeploy.',
+  'In Search Console, submit the sitemap URL and request indexing for the homepage and strongest article.',
+];
+
+const goLiveChecklist = [
+  {
+    step: '1',
+    title: 'Create the Plausible site',
+    detail: analyticsEnabled
+      ? 'Plausible is already configured in this build. Confirm the domain matches the production URL you want to measure.'
+      : 'Create a Plausible site first so you have the exact production domain ready for PUBLIC_PLAUSIBLE_DOMAIN.',
+    href: 'https://plausible.io/sites',
+    hrefLabel: 'Open Plausible',
+    status: analyticsEnabled,
+  },
+  {
+    step: '2',
+    title: 'Set env vars in Vercel and redeploy',
+    detail: searchConsoleEnabled
+      ? 'Search Console verification token is already present in this build. Add or confirm PUBLIC_PLAUSIBLE_DOMAIN, then redeploy once.'
+      : 'Set PUBLIC_PLAUSIBLE_DOMAIN and PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel project settings, then redeploy once.',
+    href: 'https://vercel.com/dashboard',
+    hrefLabel: 'Open Vercel',
+    status: analyticsEnabled && searchConsoleEnabled,
+  },
+  {
+    step: '3',
+    title: 'Verify the Search Console property',
+    detail: searchConsoleEnabled
+      ? 'The verification meta tag is ready to emit once this build is live. Open Search Console and complete verification.'
+      : 'Use the HTML tag verification method, copy the content token, and put it into PUBLIC_GOOGLE_SITE_VERIFICATION before verifying.',
+    href: 'https://search.google.com/search-console',
+    hrefLabel: 'Open Search Console',
+    status: searchConsoleEnabled,
+  },
+  {
+    step: '4',
+    title: 'Submit the sitemap',
+    detail: 'After Search Console verification, submit the sitemap to speed up crawling and discovery.',
+    href: sitemapUrl,
+    hrefLabel: 'Open sitemap.xml',
+    status: true,
+  },
+  {
+    step: '5',
+    title: 'Check your two most important indexable pages',
+    detail: strongestArticleUrl
+      ? 'Request indexing for the homepage first, then your strongest article.'
+      : 'Request indexing for the homepage first, then your strongest content page.',
+    href: homepageUrl,
+    hrefLabel: 'Open homepage',
+    secondaryHref: strongestArticleUrl,
+    secondaryHrefLabel: strongestArticleUrl ? 'Open strongest article' : undefined,
+    status: true,
+  },
+  {
+    step: '6',
+    title: 'Publish the first X and Reddit posts',
+    detail: 'Once analytics and verification are set, use the share cards below so the first traffic lands on tagged URLs.',
+    status: true,
+  },
+];
+
+const launchTargets = [
+  {
+    id: 'homepage',
+    eyebrow: 'Broad intro',
+    title: 'Homepage',
+    note: 'Best for profile links, first posts, and general “what is this?” shares.',
+    absoluteUrl: toAbsoluteUrl('/'),
+    trackedUrl: buildTrackedUrl('/', {
+      source: 'manual',
+      medium: 'social',
+      campaign: 'soft-launch',
+      content: 'homepage',
+    }),
+    xText: 'I’ve been building cnjianghu, a site for going deeper into Chinese culture beyond surface-level stereotypes.',
+    redditTitle: 'I built a site for exploring Chinese culture beyond surface-level stereotypes',
+  },
+  ...(latestArticle
+    ? [{
+        id: latestArticle.id,
+        eyebrow: 'Best story to share',
+        title: latestArticle.data.title,
+        note: 'Best for Reddit threads and context-rich launch posts.',
+        absoluteUrl: toAbsoluteUrl(getDeepDiveUrl(latestArticle.id)),
+        trackedUrl: buildTrackedUrl(getDeepDiveUrl(latestArticle.id), {
+          source: 'manual',
+          medium: 'social',
+          campaign: 'soft-launch',
+          content: latestArticle.id,
+        }),
+        xText: `New deep dive from cnjianghu: ${latestArticle.data.title}`,
+        redditTitle: `${latestArticle.data.title} — a deep dive from cnjianghu`,
+      }]
+    : []),
+];
+
+const launchChannels = [
+  {
+    name: 'X / Twitter',
+    description: 'Use for concise intros, launch threads, and posting the homepage first.',
+  },
+  {
+    name: 'Reddit',
+    description: 'Use for deeper context posts and your strongest single article.',
+  },
+];
+---
+
+<BaseLayout title="Launch Kit" description="UTM-tagged launch links and share copy for cnjianghu.">
+  <meta slot="head" name="robots" content="noindex,nofollow" />
+
+  <div class="container-wide py-16 md:py-20">
+    <div class="max-w-3xl">
+      <p class="text-sm font-ui font-semibold uppercase tracking-[0.18em] text-vermilion">
+        Launch Kit
+      </p>
+      <h1 class="mt-3 text-4xl md:text-5xl font-heading font-bold text-ink-900 dark:text-ink-50">
+        Soft launch, without manual busywork.
+      </h1>
+      <p class="mt-4 text-lg text-ink-500 dark:text-ink-400 leading-relaxed">
+        Use tagged URLs, prefilled share links, and copy blocks for the first Reddit and X posts.
+        This page is intentionally not indexed.
+      </p>
+    </div>
+
+    <div class="mt-8 rounded-[1.75rem] border border-ink-200 bg-white/85 p-6 dark:border-ink-800 dark:bg-ink-900/80">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+            Analytics
+          </p>
+          <p class="mt-2 text-base text-ink-700 dark:text-ink-200">
+            {analyticsEnabled
+              ? 'Plausible is configured. Share clicks, copy actions, and search behavior will be measurable.'
+              : 'Plausible scaffolding is live, but the script is disabled until you set PUBLIC_PLAUSIBLE_DOMAIN.'}
+          </p>
+        </div>
+        <code class="rounded-full bg-ink-100 px-4 py-2 text-xs font-ui text-ink-500 dark:bg-ink-800 dark:text-ink-300">
+          PUBLIC_PLAUSIBLE_DOMAIN
+        </code>
+      </div>
+    </div>
+
+    <section class="mt-8 rounded-[1.75rem] border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div class="max-w-2xl">
+          <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+            Readiness
+          </p>
+          <h2 class="mt-2 text-2xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+            Analytics and search setup, before launch.
+          </h2>
+          <p class="mt-2 text-sm text-ink-600 dark:text-ink-300 leading-relaxed">
+            This block tells you what is already live, what still needs an environment variable, and which URLs to submit after verification.
+          </p>
+        </div>
+        <div class="inline-flex items-center rounded-full bg-ink-100 px-4 py-2 text-xs font-ui font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-300">
+          {readinessItems.filter((item) => item.status).length} / {readinessItems.length} ready
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-4 lg:grid-cols-2">
+        {readinessItems.map((item) => (
+          <article class="rounded-2xl border border-ink-200 bg-ink-50 p-4 dark:border-ink-800 dark:bg-ink-950">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-base font-heading font-semibold text-ink-900 dark:text-ink-50">
+                {item.label}
+              </h3>
+              <span
+                class:list={[
+                  'rounded-full px-3 py-1 text-[0.68rem] font-ui font-semibold uppercase tracking-[0.14em]',
+                  item.status
+                    ? 'bg-jade/15 text-jade dark:bg-jade/20 dark:text-ink-50'
+                    : 'bg-vermilion-light/70 text-vermilion-dark dark:bg-vermilion/15 dark:text-vermilion-light',
+                ]}
+              >
+                {item.status ? 'Ready' : 'Action needed'}
+              </span>
+            </div>
+            <p class="mt-3 text-sm leading-7 text-ink-600 dark:text-ink-300">
+              {item.detail}
+            </p>
+            {item.envKey && (
+              <code class="mt-4 inline-flex rounded-full bg-white px-3 py-1.5 text-[0.72rem] font-ui text-ink-500 dark:bg-ink-900 dark:text-ink-300">
+                {item.envKey}
+              </code>
+            )}
+            {item.href && (
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-4 inline-flex items-center gap-2 text-sm font-ui text-vermilion-dark dark:text-vermilion-light hover:text-vermilion transition-colors"
+              >
+                Open endpoint
+              </a>
+            )}
+          </article>
+        ))}
+      </div>
+
+      <div class="mt-6 rounded-2xl border border-dashed border-ink-300 p-4 dark:border-ink-700">
+        <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+          Activation Order
+        </p>
+        <ol class="mt-3 space-y-2 text-sm leading-7 text-ink-600 dark:text-ink-300">
+          {activationSteps.map((step) => (
+            <li>{step}</li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section class="mt-8 rounded-[1.75rem] border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900">
+      <div class="max-w-2xl">
+        <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+          Go Live
+        </p>
+        <h2 class="mt-2 text-2xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+          Execute the launch in order.
+        </h2>
+        <p class="mt-2 text-sm text-ink-600 dark:text-ink-300 leading-relaxed">
+          This is the shortest path from “the site is technically ready” to “the site is measurable and discoverable.”
+        </p>
+      </div>
+
+      <div class="mt-6 grid gap-4">
+        {goLiveChecklist.map((item) => (
+          <article class="rounded-2xl border border-ink-200 bg-ink-50 p-4 dark:border-ink-800 dark:bg-ink-950">
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div class="flex gap-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink-900 text-sm font-ui font-semibold text-ink-50 dark:bg-ink-100 dark:text-ink-950">
+                  {item.step}
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="text-base font-heading font-semibold text-ink-900 dark:text-ink-50">
+                      {item.title}
+                    </h3>
+                    <span
+                      class:list={[
+                        'rounded-full px-3 py-1 text-[0.68rem] font-ui font-semibold uppercase tracking-[0.14em]',
+                        item.status
+                          ? 'bg-jade/15 text-jade dark:bg-jade/20 dark:text-ink-50'
+                          : 'bg-vermilion-light/70 text-vermilion-dark dark:bg-vermilion/15 dark:text-vermilion-light',
+                      ]}
+                    >
+                      {item.status ? 'Ready to do' : 'Blocked'}
+                    </span>
+                  </div>
+                  <p class="mt-2 text-sm leading-7 text-ink-600 dark:text-ink-300">
+                    {item.detail}
+                  </p>
+                </div>
+              </div>
+
+              {(item.href || item.secondaryHref) && (
+                <div class="flex flex-wrap gap-3 md:max-w-xs md:justify-end">
+                  {item.href && (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2 text-sm font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors"
+                    >
+                      {item.hrefLabel}
+                    </a>
+                  )}
+                  {item.secondaryHref && item.secondaryHrefLabel && (
+                    <a
+                      href={item.secondaryHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2 text-sm font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors"
+                    >
+                      {item.secondaryHrefLabel}
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <div class="mt-12 grid gap-6 xl:grid-cols-2">
+      {launchTargets.map((target) => {
+        const xShareHref = buildXShareUrl({
+          text: target.xText,
+          url: buildTrackedUrl(target.absoluteUrl, {
+            source: 'x',
+            medium: 'social',
+            campaign: 'soft-launch',
+            content: target.id,
+          }),
+        });
+
+        const redditShareHref = buildRedditShareUrl({
+          title: target.redditTitle,
+          url: buildTrackedUrl(target.absoluteUrl, {
+            source: 'reddit',
+            medium: 'social',
+            campaign: 'soft-launch',
+            content: target.id,
+          }),
+        });
+
+        return (
+          <section class="rounded-[1.75rem] border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900">
+            <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+              {target.eyebrow}
+            </p>
+            <h2 class="mt-2 text-2xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+              {target.title}
+            </h2>
+            <p class="mt-2 text-sm text-ink-500 dark:text-ink-400 leading-relaxed">
+              {target.note}
+            </p>
+            <p class="mt-4 text-xs font-ui text-ink-400 dark:text-ink-500 break-all">
+              {target.absoluteUrl}
+            </p>
+
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a
+                href={xShareHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                class:list={[
+                  'inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2.5 text-sm font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors',
+                  buildPlausibleClasses('Launch Share Click', {
+                    network: 'x',
+                    target: target.id,
+                    campaign: 'soft-launch',
+                  }),
+                ]}
+              >
+                Share on X
+              </a>
+              <a
+                href={redditShareHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                class:list={[
+                  'inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2.5 text-sm font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors',
+                  buildPlausibleClasses('Launch Share Click', {
+                    network: 'reddit',
+                    target: target.id,
+                    campaign: 'soft-launch',
+                  }),
+                ]}
+              >
+                Share on Reddit
+              </a>
+              <CopyTextButton
+                client:load
+                value={target.trackedUrl}
+                label="Copy tagged URL"
+                successLabel="URL copied"
+                eventName="Launch Copy"
+                eventProps={{ field: 'url', target: target.id }}
+                className="inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2.5 text-sm font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors"
+              />
+            </div>
+
+            <div class="mt-6 grid gap-4 lg:grid-cols-2">
+              <div class="rounded-2xl bg-ink-50 p-4 dark:bg-ink-950">
+                <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+                  X Copy
+                </p>
+                <p class="mt-2 text-sm leading-7 text-ink-700 dark:text-ink-200">
+                  {target.xText}
+                </p>
+                <div class="mt-4">
+                  <CopyTextButton
+                    client:load
+                    value={target.xText}
+                    label="Copy X copy"
+                    successLabel="Copied"
+                    eventName="Launch Copy"
+                    eventProps={{ field: 'x-copy', target: target.id }}
+                    className="inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2 text-xs font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div class="rounded-2xl bg-ink-50 p-4 dark:bg-ink-950">
+                <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+                  Reddit Title
+                </p>
+                <p class="mt-2 text-sm leading-7 text-ink-700 dark:text-ink-200">
+                  {target.redditTitle}
+                </p>
+                <div class="mt-4">
+                  <CopyTextButton
+                    client:load
+                    value={target.redditTitle}
+                    label="Copy Reddit title"
+                    successLabel="Copied"
+                    eventName="Launch Copy"
+                    eventProps={{ field: 'reddit-title', target: target.id }}
+                    className="inline-flex items-center justify-center rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2 text-xs font-ui font-medium text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      })}
+    </div>
+
+    <section class="mt-12 rounded-[1.75rem] border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900">
+      <p class="text-[0.72rem] font-ui font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+        Launch Notes
+      </p>
+      <div class="mt-4 grid gap-4 md:grid-cols-2">
+        {launchChannels.map((channel) => (
+          <div class="rounded-2xl bg-ink-50 p-4 dark:bg-ink-950">
+            <h2 class="text-lg font-heading font-semibold text-ink-900 dark:text-ink-50">
+              {channel.name}
+            </h2>
+            <p class="mt-2 text-sm leading-7 text-ink-600 dark:text-ink-300">
+              {channel.description}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div class="mt-6 rounded-2xl border border-dashed border-ink-300 p-4 dark:border-ink-700">
+        <p class="text-sm font-ui text-ink-500 dark:text-ink-400">
+          Suggested Plausible goals for this launch: <code>Search</code>, <code>Share Click</code>,
+          <code>Copy Link</code>, <code>Launch Share Click</code>, and <code>Launch Copy</code>.
+        </p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

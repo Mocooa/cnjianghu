@@ -69,6 +69,10 @@ const glossary = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './content/published/glossary' }),
   schema: z.object({
     title: z.string(),
+    kind: z.enum(['term', 'concept-note']),
+    pillar: pillarEnum,
+    dossier: z.string(),
+    evidence_type: z.enum(['language-led', 'worldview-led', 'platform-led', 'data-led']),
     category: z.enum([
       'philosophy', 'social', 'food', 'internet',
       'arts', 'daily-life', 'business', 'history',
@@ -79,22 +83,8 @@ const glossary = defineCollection({
     short_definition: z.string(),
     tags: z.array(z.string()).optional(),
     related_terms: z.array(z.string()).optional(),
+    sources: z.array(sourceSchema).optional(),
     draft: z.boolean().default(false),
-  }),
-});
-
-/* ─── Series metadata ─── */
-
-const series = defineCollection({
-  loader: glob({ pattern: '**/_series.yaml', base: './content/published/series' }),
-  schema: z.object({
-    name: z.string(),
-    slug: z.string(),
-    description: z.string(),
-    pillar: pillarEnum,
-    cover_image: z.string().optional(),
-    total_parts: z.number(),
-    status: z.enum(['ongoing', 'completed']).default('ongoing'),
   }),
 });
 
@@ -102,5 +92,4 @@ export const collections = {
   'deep-dives': deepDives,
   'quick-bites': quickBites,
   glossary,
-  series,
 };

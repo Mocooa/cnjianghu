@@ -1,0 +1,76 @@
+---
+import { buildGlossarySupportSections } from '../../data/glossary-dependency-links.mjs';
+
+interface Props {
+  dependencies: string[];
+  glossaryDependencyLookup?: Map<string, {
+    slug: string;
+    title: string;
+    chinese: string;
+    kind: 'term' | 'concept-note';
+  }>;
+  compact?: boolean;
+}
+
+const {
+  dependencies,
+  glossaryDependencyLookup = new Map(),
+  compact = false,
+} = Astro.props;
+
+const sections = buildGlossarySupportSections(dependencies, glossaryDependencyLookup);
+const headingClass = compact
+  ? 'text-[10px] font-ui uppercase tracking-[0.14em] text-ink-400 dark:text-ink-500'
+  : 'text-[11px] font-ui uppercase tracking-[0.12em] text-ink-400 dark:text-ink-500';
+const supportLabelClass = compact
+  ? 'text-[10px] font-ui uppercase tracking-[0.14em]'
+  : 'text-[10px] font-ui uppercase tracking-[0.14em]';
+---
+
+{sections.length > 0 && (
+  <div class:list={[compact ? 'mt-3 space-y-2' : 'mt-3 space-y-2']}>
+    <p class={headingClass}>
+      Support
+    </p>
+    <div class="space-y-2.5">
+      {sections.map((section) => (
+        <div class="space-y-1.5">
+          <p
+            class:list={[
+              supportLabelClass,
+              section.key === 'liveConceptNotes'
+                ? 'text-vermilion/70'
+                : 'text-ink-400 dark:text-ink-500',
+            ]}
+          >
+            {section.label}
+          </p>
+          <div class="flex flex-wrap gap-2">
+            {section.items.map((dependency) => (
+              dependency.isLinked ? (
+                <a
+                  href={dependency.href}
+                  class:list={[
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-ui transition-colors',
+                    dependency.kind === 'concept-note'
+                      ? 'border border-vermilion/25 bg-vermilion/8 text-vermilion hover:border-vermilion dark:text-ink-50'
+                      : 'border border-ink-200 bg-white text-ink-600 hover:border-vermilion hover:text-vermilion dark:border-ink-700 dark:bg-ink-900 dark:text-ink-300',
+                  ]}
+                >
+                  <span>{dependency.label}</span>
+                  <span class="text-[10px] uppercase tracking-[0.12em] opacity-70">
+                    {dependency.kind === 'concept-note' ? 'Concept' : 'Term'}
+                  </span>
+                </a>
+              ) : (
+                <span class="inline-flex items-center rounded-full border border-dashed border-ink-200 px-2.5 py-1 text-xs font-ui text-ink-500 dark:border-ink-700 dark:text-ink-400">
+                  {dependency.label}
+                </span>
+              )
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}

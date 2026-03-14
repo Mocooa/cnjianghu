@@ -1,0 +1,231 @@
+---
+import type { RoadmapDossierGroup } from '../../data/roadmap';
+import { buildReviewFormatGroups } from '../../data/roadmap-grouping.mjs';
+import { getGlossaryEntryPointSummary } from '../../data/glossary-dossier.mjs';
+import { getDossierAnchorId } from '../../data/dossier-links.mjs';
+import DossierGlossaryBlock from './DossierGlossaryBlock.astro';
+import GlossaryLinkedTitle from './GlossaryLinkedTitle.astro';
+import GlossarySupportSections from './GlossarySupportSections.astro';
+
+interface DossierGlossaryLookupItem {
+  publishedEntries: Array<{
+    slug: string;
+    title: string;
+    chinese: string;
+    pinyin: string;
+    kind: 'term' | 'concept-note';
+  }>;
+  plannedConcepts: Array<{
+    term: string;
+    slug: string;
+    launchFirst: boolean;
+    evergreen: boolean;
+    titleCount: number;
+  }>;
+}
+
+interface Props {
+  groups: RoadmapDossierGroup[];
+  heading?: string;
+  description?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  columns?: 2 | 3;
+  pillarSlug?: string;
+  glossaryLookup?: Record<string, DossierGlossaryLookupItem>;
+  glossaryDependencyLookup?: Map<string, {
+    slug: string;
+    title: string;
+    chinese: string;
+    kind: 'term' | 'concept-note';
+  }>;
+}
+
+const {
+  groups,
+  heading,
+  description,
+  ctaHref,
+  ctaLabel,
+  columns = 2,
+  pillarSlug,
+  glossaryLookup = {},
+  glossaryDependencyLookup = new Map(),
+} = Astro.props;
+
+const columnClass = columns === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2';
+const dossierGroups = groups.map(group => ({
+  ...group,
+  formatGroups: buildReviewFormatGroups(group.items),
+  glossary: glossaryLookup[group.dossier] ?? {
+    publishedEntries: [],
+    plannedConcepts: [],
+  },
+})).map((group) => ({
+  ...group,
+  glossarySummary: getGlossaryEntryPointSummary(group.glossary),
+}));
+---
+
+<div class="space-y-6">
+  {(heading || description || (ctaHref && ctaLabel)) && (
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      {(heading || description) && (
+        <div>
+          {heading && (
+            <h2 class="text-2xl md:text-3xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+              {heading}
+            </h2>
+          )}
+          {description && (
+            <p class="mt-2 max-w-2xl text-sm md:text-base text-ink-600 dark:text-ink-300">
+              {description}
+            </p>
+          )}
+        </div>
+      )}
+
+      {ctaHref && ctaLabel && (
+        <a
+          href={ctaHref}
+          class="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-ui text-ink-700 transition-colors hover:border-vermilion hover:text-vermilion dark:border-ink-700 dark:bg-ink-900 dark:text-ink-200 dark:hover:border-vermilion"
+        >
+          {ctaLabel}
+        </a>
+      )}
+    </div>
+  )}
+
+  <div class={`grid grid-cols-1 gap-5 ${columnClass}`}>
+    {dossierGroups.map(group => (
+      <article
+        id={pillarSlug ? getDossierAnchorId(pillarSlug, group.dossier) : undefined}
+        class="scroll-mt-24 rounded-2xl border border-ink-200 bg-white p-5 shadow-sm dark:border-ink-800 dark:bg-ink-900/70"
+      >
+        <div class="mb-4 flex items-end justify-between gap-4 border-b border-ink-100 pb-4 dark:border-ink-800">
+          <div>
+            <h3 class="text-lg font-heading font-semibold text-ink-900 dark:text-ink-50">
+              {group.dossier}
+            </h3>
+            <p class="mt-1 text-sm text-ink-500 dark:text-ink-400">
+              {group.items.length} planned title{group.items.length === 1 ? '' : 's'}
+            </p>
+          </div>
+
+          {(group.glossarySummary.liveCount > 0 || group.glossarySummary.plannedCount > 0) && (
+            <div class="flex flex-wrap justify-end gap-2 text-[11px] font-ui uppercase tracking-[0.12em]">
+              {group.glossarySummary.liveCount > 0 && (
+                <span class="rounded-full bg-vermilion/10 px-2.5 py-1 text-vermilion">
+                  {group.glossarySummary.liveCount} live glossary
+                </span>
+              )}
+              {group.glossarySummary.plannedCount > 0 && (
+                <span class="rounded-full bg-ink-100 px-2.5 py-1 text-ink-500 dark:bg-ink-800 dark:text-ink-300">
+                  {group.glossarySummary.plannedCount} planned concepts
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div class="space-y-5">
+          {group.glossarySummary.shouldLead && (
+            <DossierGlossaryBlock
+              publishedEntries={group.glossary.publishedEntries}
+              plannedConcepts={group.glossary.plannedConcepts}
+              prominent={true}
+            />
+          )}
+
+          {group.formatGroups.map(formatGroup => (
+            <details
+              class="rounded-xl border border-ink-100 bg-ink-50/60 p-3 dark:border-ink-800 dark:bg-ink-950/40"
+              open={formatGroup.defaultOpen}
+            >
+              <summary class="flex cursor-pointer list-none items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h4 class="text-sm font-ui font-semibold uppercase tracking-[0.14em] text-ink-600 dark:text-ink-300">
+                      {formatGroup.format}
+                    </h4>
+                    <span class="rounded-full bg-white px-2 py-0.5 text-[11px] font-ui text-ink-500 dark:bg-ink-900 dark:text-ink-400">
+                      {formatGroup.items.length}
+                    </span>
+                    {formatGroup.hiddenCount > 0 && (
+                      <span class="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-ui text-ink-500 dark:bg-ink-800 dark:text-ink-300">
+                        +{formatGroup.hiddenCount} more
+                      </span>
+                    )}
+                  </div>
+                  <p class="mt-2 text-sm text-ink-500 dark:text-ink-400">
+                    {formatGroup.previewItems.map((item) => item.title).join(' · ')}
+                  </p>
+                </div>
+                <span class="text-[11px] font-ui uppercase tracking-[0.12em] text-ink-400 dark:text-ink-500">
+                  {formatGroup.defaultOpen ? 'Open' : 'Expand'}
+                </span>
+              </summary>
+
+              <ul class="mt-4 space-y-3">
+                {formatGroup.items.map(item => {
+                  const isLaunch = item.tags.includes('Launch first');
+                  const isShareable = item.tags.includes('High shareability');
+                  const needsGlossary = item.tags.includes('Needs glossary support');
+
+                  return (
+                    <li class="rounded-xl border border-ink-100 bg-ink-50/70 p-4 dark:border-ink-800 dark:bg-ink-950/60">
+                      <div class="mb-3 flex flex-wrap gap-2 text-[11px] font-ui uppercase tracking-[0.12em]">
+                        <span class="rounded-full bg-vermilion/12 px-2.5 py-1 text-vermilion">
+                          Planned
+                        </span>
+                        {isLaunch && (
+                          <span class="rounded-full bg-azure/12 px-2.5 py-1 text-azure dark:text-ink-50">
+                            Launch first
+                          </span>
+                        )}
+                        {item.launchWave && (
+                          <span class="rounded-full bg-ink-200/80 px-2.5 py-1 text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+                            Wave {item.launchWave}
+                          </span>
+                        )}
+                        {isShareable && (
+                          <span class="rounded-full bg-jade/15 px-2.5 py-1 text-jade dark:text-ink-50">
+                            Shareable
+                          </span>
+                        )}
+                        {needsGlossary && (
+                          <span class="rounded-full bg-gold/15 px-2.5 py-1 text-gold dark:text-ink-50">
+                            Needs glossary
+                          </span>
+                        )}
+                      </div>
+
+                      <h5 class="text-base font-heading font-medium leading-snug text-ink-900 dark:text-ink-50">
+                        <GlossaryLinkedTitle
+                          title={item.title}
+                          glossaryDependencyLookup={glossaryDependencyLookup}
+                        />
+                      </h5>
+
+                      <GlossarySupportSections
+                        dependencies={[...item.dependencies]}
+                        glossaryDependencyLookup={glossaryDependencyLookup}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          ))}
+
+          {!group.glossarySummary.shouldLead && (
+            <DossierGlossaryBlock
+              publishedEntries={group.glossary.publishedEntries}
+              plannedConcepts={group.glossary.plannedConcepts}
+            />
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</div>

@@ -8,6 +8,10 @@
 
   <div class="container-wide relative">
     <div class="max-w-3xl">
+      <p class="font-ui text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-500 dark:text-ink-400 mb-4">
+        Culture from the inside
+      </p>
+
       <!-- Chinese accent -->
       <div class="font-chinese text-4xl md:text-6xl text-ink-200 dark:text-ink-800 mb-4 select-none" aria-hidden="true">
         江湖
@@ -19,7 +23,7 @@
       </h1>
 
       <p class="mt-6 text-lg md:text-xl text-ink-600 dark:text-ink-400 max-w-2xl leading-relaxed">
-        Not the China you see on the news, but the one you <em>feel</em> when you're in it.
+        Not the China you see on the news, but the one you <span class="font-ui font-semibold text-ink-800 dark:text-ink-200">feel</span> when you're in it.
         Curated stories, decoded internet culture, and insider perspectives — for the curious.
       </p>
 
@@ -34,12 +38,25 @@
           </svg>
         </a>
         <a
-          href="/about"
+          href="/search"
           class="inline-flex items-center gap-2 px-6 py-3 border border-ink-300 dark:border-ink-700 text-ink-700 dark:text-ink-300 font-ui font-medium rounded-lg hover:border-vermilion hover:text-vermilion transition-colors"
         >
-          What is this?
+          Search the Archive
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
         </a>
       </div>
+
+      <nav class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 font-ui text-sm text-ink-600 dark:text-ink-300" aria-label="Quick entry points">
+        <span class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">
+          Start with
+        </span>
+        <a href="/today" class="py-1 hover:text-vermilion transition-colors">Today</a>
+        <a href="/glossary" class="py-1 hover:text-vermilion transition-colors">Glossary</a>
+        <a href="/about" class="py-1 hover:text-vermilion transition-colors">About</a>
+      </nav>
     </div>
   </div>
 </section>

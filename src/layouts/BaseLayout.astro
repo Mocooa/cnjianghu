@@ -2,23 +2,34 @@
 import '../styles/global.css';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import PlausibleAnalytics from '../components/analytics/PlausibleAnalytics.astro';
+import playfairDisplayLatin from '@fontsource-variable/playfair-display/files/playfair-display-latin-wght-normal.woff2?url';
+import sourceSerif4Latin from '@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
   ogType?: string;
+  searchIndex?: boolean;
+  robots?: string;
 }
 
 const {
   title,
   description = 'Go deeper into Chinese culture. Curated stories, decoded internet culture, and insider perspectives for the global Chinamaxing community.',
-  ogImage = '/og-default.png',
+  ogImage = '/og/site.png',
   ogType = 'website',
+  searchIndex = false,
+  robots = 'index,follow',
 } = Astro.props;
 
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://cnjianghu.com');
+const siteUrl = Astro.site ?? new URL(Astro.url.origin);
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl);
 const fullTitle = title === 'Home' ? 'cnjianghu — Welcome to the Jianghu' : `${title} | cnjianghu`;
+const ogImageUrl = new URL(ogImage, siteUrl);
+const rssFeedUrl = new URL('/rss.xml', siteUrl);
+const googleSiteVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
 ---
 
 <!doctype html>
@@ -27,17 +38,23 @@ const fullTitle = title === 'Home' ? 'cnjianghu — Welcome to the Jianghu' : `$
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href={playfairDisplayLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sourceSerif4Latin} as="font" type="font/woff2" crossorigin />
 
     <!-- SEO -->
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <meta name="googlebot" content={robots} />
     <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" type="application/rss+xml" title="cnjianghu RSS Feed" href={rssFeedUrl} />
+    {googleSiteVerification && <meta name="google-site-verification" content={googleSiteVerification} />}
 
     <!-- Open Graph -->
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={ogImageUrl} data-pagefind-default-meta="image[content]" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="cnjianghu" />
 
@@ -45,15 +62,9 @@ const fullTitle = title === 'Home' ? 'cnjianghu — Welcome to the Jianghu' : `$
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image" content={ogImageUrl} />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap"
-      rel="stylesheet"
-    />
+    <slot name="head" />
 
     <!-- Theme -->
     <script is:inline>
@@ -62,12 +73,13 @@ const fullTitle = title === 'Home' ? 'cnjianghu — Welcome to the Jianghu' : `$
         document.documentElement.classList.add('dark');
       }
     </script>
+    <PlausibleAnalytics />
 
     <meta name="generator" content={Astro.generator} />
   </head>
   <body class="min-h-screen flex flex-col bg-ink-50 text-ink-900 dark:bg-ink-950 dark:text-ink-100 transition-colors duration-300">
     <Header />
-    <main class="flex-1">
+    <main class="flex-1" data-pagefind-body={searchIndex ? true : undefined}>
       <slot />
     </main>
     <Footer />

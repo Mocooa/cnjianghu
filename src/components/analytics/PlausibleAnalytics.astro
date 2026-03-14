@@ -1,0 +1,17 @@
+---
+const domain = import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN?.trim();
+const apiHost = (import.meta.env.PUBLIC_PLAUSIBLE_API_HOST || 'https://plausible.io').replace(/\/$/, '');
+const analyticsEnabled = Boolean(domain);
+const scriptSrc = `${apiHost}/js/script.js`;
+---
+
+{analyticsEnabled && (
+  <>
+    <script is:inline>
+      window.plausible = window.plausible || function () {
+        (window.plausible.q = window.plausible.q || []).push(arguments);
+      };
+    </script>
+    <script defer data-domain={domain} src={scriptSrc}></script>
+  </>
+)}

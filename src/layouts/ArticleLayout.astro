@@ -1,6 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import { getPillar } from '../utils/pillars';
+import ShareActions from '../components/content/ShareActions.astro';
 
 interface Props {
   title: string;
@@ -8,8 +9,10 @@ interface Props {
   summary: string;
   pillar: string;
   date: Date;
+  author?: string;
   readingTime?: number;
   coverImage?: string;
+  ogImage?: string;
   tags?: string[];
   sources?: Array<{ title: string; url: string; platform?: string }>;
   series?: {
@@ -26,8 +29,10 @@ const {
   summary,
   pillar,
   date,
+  author = 'cnjianghu',
   readingTime,
   coverImage,
+  ogImage,
   tags = [],
   sources = [],
   series,
@@ -40,9 +45,33 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
   year: 'numeric',
 }).format(date);
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: summary,
+  datePublished: date.toISOString(),
+  dateModified: date.toISOString(),
+  mainEntityOfPage: canonicalUrl.toString(),
+  articleSection: pillarData?.name ?? pillar,
+  inLanguage: 'en',
+  author: {
+    '@type': 'Person',
+    name: author,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'cnjianghu',
+    url: Astro.site?.toString() ?? canonicalUrl.origin,
+  },
+  ...(tags.length > 0 ? { keywords: tags.join(', ') } : {}),
+  ...((ogImage ?? coverImage) ? { image: new URL(ogImage ?? coverImage!, Astro.site ?? Astro.url).toString() } : {}),
+};
 ---
 
-<BaseLayout title={title} description={summary} ogType="article">
+<BaseLayout title={title} description={summary} ogType="article" ogImage={ogImage} searchIndex={true}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
   <article class="animate-fade-in">
     {/* Cover image */}
     {coverImage && (
@@ -58,7 +87,7 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
     {/* Article header */}
     <header class="container-article pt-10 pb-8">
       {/* Breadcrumb */}
-      <nav class="flex items-center gap-2 text-sm font-ui text-ink-400 dark:text-ink-500 mb-6">
+      <nav class="flex items-center gap-2 text-sm font-ui text-ink-400 dark:text-ink-500 mb-6" data-pagefind-ignore>
         <a href="/" class="hover:text-vermilion transition-colors">Home</a>
         <span>/</span>
         <a href="/explore" class="hover:text-vermilion transition-colors">Explore</a>
@@ -133,9 +162,15 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
       <slot />
     </div>
 
+    <ShareActions
+      title={title}
+      url={canonicalUrl.toString()}
+      slug={Astro.url.pathname.split('/').filter(Boolean).at(-1) ?? 'article'}
+    />
+
     {/* Sources */}
     {sources.length > 0 && (
-      <footer class="container-article mt-12 pt-8 border-t border-ink-200 dark:border-ink-800">
+      <footer class="container-article mt-12 pt-8 border-t border-ink-200 dark:border-ink-800" data-pagefind-ignore>
         <h3 class="text-sm font-ui font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400 mb-3">
           Sources & Further Reading
         </h3>
@@ -163,7 +198,7 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
 
     {/* Series navigation */}
     {series && (
-      <nav class="container-article mt-8 py-6 border-t border-ink-200 dark:border-ink-800 flex justify-between font-ui text-sm">
+      <nav class="container-article mt-8 py-6 border-t border-ink-200 dark:border-ink-800 flex justify-between font-ui text-sm" data-pagefind-ignore>
         {series.part > 1 ? (
           <a href="#" class="text-vermilion hover:underline">← Previous</a>
         ) : <span />}

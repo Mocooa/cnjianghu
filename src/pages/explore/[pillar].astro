@@ -1,8 +1,16 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/content/ArticleCard.astro';
+import PlannedTitleList from '../../components/roadmap/PlannedTitleList.astro';
 import { pillars } from '../../utils/pillars';
 import { getCollection } from 'astro:content';
+import {
+  getPlannedDossierGroups,
+  getPlannedItemsForPillar,
+  getPlannedPillarSummary,
+} from '../../data/roadmap';
+import { buildGlossaryDossierLookup } from '../../data/glossary-dossier.mjs';
+import { buildGlossaryDependencyLookup } from '../../data/glossary-dependency-links.mjs';
 
 export function getStaticPaths() {
   return pillars.map(p => ({
@@ -15,7 +23,19 @@ const { pillar } = Astro.props;
 const articles = await getCollection('deep-dives', ({ data }) =>
   !data.draft && data.pillar === pillar.slug
 );
+const allGlossaryEntries = await getCollection('glossary', ({ data }) => !data.draft);
+const pillarGlossaryEntries = allGlossaryEntries.filter((entry) => entry.data.pillar === pillar.slug);
+const publishedGlossarySlugs = new Set(allGlossaryEntries.map((entry) => entry.id));
+const glossaryDependencyLookup = buildGlossaryDependencyLookup(allGlossaryEntries);
 const sorted = articles.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const plannedGroups = getPlannedDossierGroups(pillar.slug);
+const plannedSummary = getPlannedPillarSummary(pillar.slug);
+const glossaryLookup = buildGlossaryDossierLookup({
+  pillarSlug: pillar.slug,
+  publishedEntries: pillarGlossaryEntries,
+  plannedItems: getPlannedItemsForPillar(pillar.slug),
+  publishedSlugs: publishedGlossarySlugs,
+});
 ---
 
 <BaseLayout title={pillar.name} description={pillar.description}>
@@ -61,6 +81,52 @@ const sorted = articles.sort((a, b) => b.data.date.getTime() - a.data.date.getTi
           Articles about {pillar.name.toLowerCase()} are coming soon.
         </p>
       </div>
+    )}
+
+    {plannedGroups.length > 0 && (
+      <section class="mt-16 border-t border-ink-200 pt-10 dark:border-ink-800">
+        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p class="text-xs font-ui font-semibold uppercase tracking-[0.18em] text-vermilion">
+              Planned Roadmap
+            </p>
+            <h2 class="mt-2 text-2xl md:text-3xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+              Coming into focus
+            </h2>
+            <p class="mt-3 max-w-2xl text-sm md:text-base text-ink-600 dark:text-ink-300">
+              The full planned title bank for
+              {' '}
+              {pillar.name}
+              , grouped by dossier and kept separate from published work.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <span class="rounded-full bg-ink-100 px-3 py-1.5 text-sm font-ui text-ink-600 dark:bg-ink-800 dark:text-ink-200">
+              {plannedSummary.titleCount} planned title{plannedSummary.titleCount === 1 ? '' : 's'}
+            </span>
+            <span class="rounded-full bg-ink-100 px-3 py-1.5 text-sm font-ui text-ink-600 dark:bg-ink-800 dark:text-ink-200">
+              {plannedSummary.dossierCount} dossier{plannedSummary.dossierCount === 1 ? '' : 's'}
+            </span>
+            <span class="rounded-full bg-ink-100 px-3 py-1.5 text-sm font-ui text-ink-600 dark:bg-ink-800 dark:text-ink-200">
+              {plannedSummary.launchCount} launch-first
+            </span>
+            <span class="rounded-full bg-ink-100 px-3 py-1.5 text-sm font-ui text-ink-600 dark:bg-ink-800 dark:text-ink-200">
+              {plannedSummary.glossaryCount} glossary-backed
+            </span>
+          </div>
+        </div>
+
+        <PlannedTitleList
+          groups={plannedGroups}
+          ctaHref="/archive-map"
+          ctaLabel="Open full archive map"
+          columns={2}
+          pillarSlug={pillar.slug}
+          glossaryLookup={glossaryLookup}
+          glossaryDependencyLookup={glossaryDependencyLookup}
+        />
+      </section>
     )}
   </div>
 </BaseLayout>

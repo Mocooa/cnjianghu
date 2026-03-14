@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArchiveMapPillarSection from '../components/roadmap/ArchiveMapPillarSection.astro';
+import { getCollection } from 'astro:content';
+import {
+  getPlannedPillarSections,
+  getRoadmapStats,
+  getRoadmapWaveGroups,
+} from '../data/roadmap';
+import { buildGlossaryDossierLookup } from '../data/glossary-dossier.mjs';
+import { buildGlossaryDependencyLookup } from '../data/glossary-dependency-links.mjs';
+import GlossaryLinkedTitle from '../components/roadmap/GlossaryLinkedTitle.astro';
+import GlossarySupportSections from '../components/roadmap/GlossarySupportSections.astro';
+
+const stats = getRoadmapStats();
+const waveGroups = getRoadmapWaveGroups();
+const pillarSections = getPlannedPillarSections();
+const allGlossaryEntries = await getCollection('glossary', ({ data }) => !data.draft);
+const publishedGlossarySlugs = new Set(allGlossaryEntries.map((entry) => entry.id));
+const glossaryDependencyLookup = buildGlossaryDependencyLookup(allGlossaryEntries);
+const glossaryLookups = Object.fromEntries(
+  pillarSections.map((section) => [
+    section.pillar.slug,
+    buildGlossaryDossierLookup({
+      pillarSlug: section.pillar.slug,
+      publishedEntries: allGlossaryEntries,
+      plannedItems: section.items,
+      publishedSlugs: publishedGlossarySlugs,
+    }),
+  ]),
+);
+---
+
+<BaseLayout
+  title="Archive Map"
+  description="A working roadmap of planned cnjianghu titles, dossier clusters, and launch waves."
+  robots="noindex, nofollow"
+>
+  <div class="container-wide py-12">
+    <section class="rounded-[2rem] border border-ink-200 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900/70 md:p-8">
+      <p class="text-sm font-ui font-semibold uppercase tracking-[0.18em] text-vermilion">
+        Working Roadmap
+      </p>
+      <h1 class="mt-3 text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 md:text-5xl">
+        Archive Map
+      </h1>
+      <p class="mt-4 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300 md:text-lg">
+        This is the planning surface for the current cnjianghu content architecture.
+        It shows the launch slate as planned titles grouped by pillar and dossier,
+        without pretending these entries are already published.
+      </p>
+
+      <div class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <div class="rounded-2xl border border-ink-100 bg-ink-50/70 p-4 dark:border-ink-800 dark:bg-ink-950/60">
+          <p class="text-xs font-ui uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">Pillars</p>
+          <p class="mt-2 text-2xl font-heading text-ink-900 dark:text-ink-50">{stats.pillarCount}</p>
+        </div>
+        <div class="rounded-2xl border border-ink-100 bg-ink-50/70 p-4 dark:border-ink-800 dark:bg-ink-950/60">
+          <p class="text-xs font-ui uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">Planned Titles</p>
+          <p class="mt-2 text-2xl font-heading text-ink-900 dark:text-ink-50">{stats.titleCount}</p>
+        </div>
+        <div class="rounded-2xl border border-ink-100 bg-ink-50/70 p-4 dark:border-ink-800 dark:bg-ink-950/60">
+          <p class="text-xs font-ui uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">Dossiers</p>
+          <p class="mt-2 text-2xl font-heading text-ink-900 dark:text-ink-50">{stats.dossierCount}</p>
+        </div>
+        <div class="rounded-2xl border border-ink-100 bg-ink-50/70 p-4 dark:border-ink-800 dark:bg-ink-950/60">
+          <p class="text-xs font-ui uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">Launch Waves</p>
+          <p class="mt-2 text-2xl font-heading text-ink-900 dark:text-ink-50">{stats.waveCount}</p>
+        </div>
+        <div class="rounded-2xl border border-ink-100 bg-ink-50/70 p-4 dark:border-ink-800 dark:bg-ink-950/60">
+          <p class="text-xs font-ui uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">Launch Slate</p>
+          <p class="mt-2 text-2xl font-heading text-ink-900 dark:text-ink-50">{stats.launchSlateCount}</p>
+        </div>
+      </div>
+
+      <div class="mt-8 rounded-2xl border border-vermilion/20 bg-vermilion-light/40 p-4 text-sm text-vermilion-dark dark:border-vermilion/30 dark:bg-vermilion/10 dark:text-vermilion-light">
+        Everything below is a placeholder for planning and review.
+        Published articles continue to live on the normal explore, read, glossary, and today surfaces.
+        This page now combines the full parsed title banks with the curated launch slate.
+      </div>
+    </section>
+
+    <section class="mt-12">
+      <div class="mb-6 flex flex-wrap gap-3">
+        {pillarSections.map(section => (
+          <a
+            href={`#${section.pillar.slug}`}
+            class="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-ui text-ink-700 transition-colors hover:border-vermilion hover:text-vermilion dark:border-ink-700 dark:bg-ink-900 dark:text-ink-200"
+          >
+            <span>{section.pillar.icon}</span>
+            <span>{section.pillar.name}</span>
+          </a>
+        ))}
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        {waveGroups.map(wave => (
+          <article class="rounded-3xl border border-ink-200 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900/60">
+            <p class="text-xs font-ui uppercase tracking-[0.18em] text-vermilion">Wave {wave.wave}</p>
+            <h2 class="mt-2 text-2xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+              {wave.label}
+            </h2>
+            <p class="mt-3 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+              {wave.description}
+            </p>
+            <p class="mt-4 text-sm font-ui text-ink-500 dark:text-ink-400">
+              {wave.items.length} planned title{wave.items.length === 1 ? '' : 's'}
+            </p>
+
+            <ul class="mt-5 space-y-3">
+              {wave.items.slice(0, 4).map(item => (
+                <li class="rounded-2xl border border-ink-100 bg-ink-50/70 p-4 dark:border-ink-800 dark:bg-ink-950/60">
+                  <p class="text-[11px] font-ui uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">
+                    {item.dossier} · {item.format}
+                  </p>
+                  <p class="mt-2 text-sm font-heading leading-snug text-ink-900 dark:text-ink-50">
+                    <GlossaryLinkedTitle
+                      title={item.title}
+                      glossaryDependencyLookup={glossaryDependencyLookup}
+                    />
+                  </p>
+                  <GlossarySupportSections
+                    dependencies={[...item.dependencies]}
+                    glossaryDependencyLookup={glossaryDependencyLookup}
+                    compact={true}
+                  />
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-12 space-y-8">
+      {pillarSections.map(section => (
+        <ArchiveMapPillarSection
+          pillar={section.pillar}
+          groups={section.groups}
+          summary={section.summary}
+          glossaryLookup={glossaryLookups[section.pillar.slug]}
+          glossaryDependencyLookup={glossaryDependencyLookup}
+        />
+      ))}
+    </section>
+  </div>
+</BaseLayout>

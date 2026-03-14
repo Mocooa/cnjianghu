@@ -1,9 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { getPlannedGlossaryPillarSections } from '../../data/glossary-planner.mjs';
+import { groupPublishedGlossaryEntries } from '../../data/glossary-index.mjs';
+import GlossaryEntryCard from '../../components/glossary/GlossaryEntryCard.astro';
 
 const entries = await getCollection('glossary', ({ data }) => !data.draft);
-const sorted = entries.sort((a, b) => a.data.pinyin.localeCompare(b.data.pinyin));
+const groupedEntries = groupPublishedGlossaryEntries(entries);
+const publishedSlugs = new Set(entries.map((entry) => entry.id));
+const plannedSections = getPlannedGlossaryPillarSections({ publishedSlugs });
 
 const categories = [...new Set(entries.map(e => e.data.category))].sort();
 ---
@@ -17,36 +22,155 @@ const categories = [...new Set(entries.map(e => e.data.category))].sort();
       Not just translations — cultural decodings. Each entry explains what a concept <em>means</em> in the Chinese worldview.
     </p>
 
-    {sorted.length > 0 ? (
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sorted.map(entry => (
-          <a
-            href={`/glossary/${entry.id}`}
-            class="group block p-5 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 hover:shadow-lg hover:border-ink-300 dark:hover:border-ink-700 transition-all"
-          >
-            <div class="flex items-baseline gap-2 mb-1">
-              <span class="text-2xl font-chinese font-semibold text-ink-900 dark:text-ink-50 group-hover:text-vermilion transition-colors">
-                {entry.data.chinese}
-              </span>
-              <span class="text-sm text-ink-400 italic">{entry.data.pinyin}</span>
-            </div>
-            <div class="text-xs font-ui text-ink-400 dark:text-ink-500 mb-2">
-              "{entry.data.literal}"
-            </div>
-            <p class="text-sm text-ink-600 dark:text-ink-400 line-clamp-2">
-              {entry.data.short_definition}
-            </p>
-            <span class="inline-block mt-2 px-2 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-500 dark:text-ink-400 capitalize">
-              {entry.data.category}
-            </span>
-          </a>
-        ))}
-      </div>
+    <div class="mb-6 flex flex-wrap gap-3 font-ui text-sm">
+      <a
+        href="/search"
+        class="inline-flex items-center gap-2 rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2 text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors"
+      >
+        Search archive
+      </a>
+      <a
+        href="/explore"
+        class="inline-flex items-center gap-2 rounded-full border border-ink-200 dark:border-ink-800 px-4 py-2 text-ink-600 dark:text-ink-300 hover:border-vermilion hover:text-vermilion transition-colors"
+      >
+        Read deep dives
+      </a>
+    </div>
+
+    <div class="mb-10 flex flex-wrap gap-2">
+      {categories.map(category => (
+        <a
+          href={`/search?q=${encodeURIComponent(category)}`}
+          class="inline-flex items-center rounded-full bg-ink-100 dark:bg-ink-800 px-3 py-1.5 text-xs font-ui font-medium text-ink-500 dark:text-ink-300 hover:text-vermilion transition-colors"
+        >
+          {category}
+        </a>
+      ))}
+    </div>
+
+    {entries.length > 0 ? (
+      <>
+        <div class="mb-4 flex items-center justify-between gap-4">
+          <h2 class="text-sm font-ui font-semibold uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">
+            Published Entries
+          </h2>
+          <span class="text-xs font-ui text-ink-400 dark:text-ink-500">
+            {groupedEntries.terms.length} terms · {groupedEntries.conceptNotes.length} concept notes
+          </span>
+        </div>
+
+        <div class="space-y-10">
+          {groupedEntries.terms.length > 0 && (
+            <section>
+              <div class="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <h3 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+                    Terms
+                  </h3>
+                  <p class="text-sm text-ink-500 dark:text-ink-400">
+                    Natural-language entries that explain words people actually say.
+                  </p>
+                </div>
+                <span class="text-xs font-ui text-ink-400 dark:text-ink-500">
+                  {groupedEntries.terms.length} entries
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                {groupedEntries.terms.map((entry) => (
+                  <GlossaryEntryCard entry={entry} compact={true} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {groupedEntries.conceptNotes.length > 0 && (
+            <section class="border-t border-ink-200 dark:border-ink-800 pt-8">
+              <div class="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <h3 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+                    Concept Notes
+                  </h3>
+                  <p class="text-sm text-ink-500 dark:text-ink-400 max-w-2xl">
+                    Interpretive frames or sourced background notes that help decode a dossier, even when they are not single natural-language terms.
+                  </p>
+                </div>
+                <span class="text-xs font-ui text-ink-400 dark:text-ink-500">
+                  {groupedEntries.conceptNotes.length} notes
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                {groupedEntries.conceptNotes.map((entry) => (
+                  <GlossaryEntryCard entry={entry} compact={true} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      </>
     ) : (
       <div class="text-center py-16">
         <div class="text-5xl mb-4">📖</div>
         <p class="text-ink-400 dark:text-ink-500">Glossary entries coming soon.</p>
       </div>
+    )}
+
+    {plannedSections.length > 0 && (
+      <section class="mt-16 border-t border-ink-200 dark:border-ink-800 pt-10" data-pagefind-ignore>
+        <div class="max-w-2xl mb-8">
+          <p class="text-sm font-ui font-semibold uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400 mb-2">
+            Coming Into Language
+          </p>
+          <h2 class="text-2xl md:text-3xl font-heading font-bold text-ink-900 dark:text-ink-50 mb-2">
+            Planned Glossary Concepts
+          </h2>
+          <p class="text-ink-500 dark:text-ink-400">
+            Lightweight concept backlog pulled from the title banks. These are not live entries yet, but they show which terms the archive still needs to explain.
+          </p>
+        </div>
+
+        <div class="space-y-10">
+          {plannedSections.map((section) => (
+            <section>
+              <div class="flex flex-wrap items-center gap-3 mb-4">
+                <h3 class="text-lg font-heading font-semibold text-ink-900 dark:text-ink-50">
+                  {section.pillar.name}
+                </h3>
+                <span class="text-sm text-ink-400 dark:text-ink-500">
+                  {section.pillar.chinese}
+                </span>
+                <span class="inline-flex items-center rounded-full border border-ink-200 dark:border-ink-800 px-2.5 py-1 text-xs font-ui text-ink-500 dark:text-ink-400">
+                  {section.concepts.length} planned
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {section.concepts.map((concept) => (
+                  <div class="rounded-xl border border-dashed border-ink-200 dark:border-ink-800 bg-ink-50/80 dark:bg-ink-900/60 px-4 py-3">
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                      <span class="text-sm font-ui font-semibold text-ink-800 dark:text-ink-100">
+                        {concept.term}
+                      </span>
+                      <span class="inline-flex items-center rounded-full bg-white dark:bg-ink-800 px-2 py-0.5 text-[11px] font-ui text-ink-500 dark:text-ink-400">
+                        Planned
+                      </span>
+                      {concept.launchFirst && (
+                        <span class="inline-flex items-center rounded-full bg-vermilion/10 px-2 py-0.5 text-[11px] font-ui text-vermilion">
+                          Launch first
+                        </span>
+                      )}
+                    </div>
+                    <p class="text-xs font-ui text-ink-500 dark:text-ink-400">
+                      {concept.titleCount} supporting titles across {concept.dossierCount} dossier{concept.dossierCount === 1 ? '' : 's'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </section>
     )}
   </div>
 </BaseLayout>

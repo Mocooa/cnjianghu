@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pillar Dossier Review</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4efe7;
+        --panel: rgba(255, 251, 245, 0.94);
+        --panel-strong: #fffdf9;
+        --ink: #1f2937;
+        --muted: #6b7280;
+        --line: #d9d2c8;
+        --accent: #9f3a28;
+        --accent-soft: #f6ddd6;
+        --keep: #166534;
+        --keep-bg: #dcfce7;
+        --delete: #991b1b;
+        --delete-bg: #fee2e2;
+        --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(159, 58, 40, 0.08), transparent 28%),
+          linear-gradient(180deg, #fbf8f2 0%, var(--bg) 100%);
+      }
+
+      .page {
+        width: min(1440px, calc(100vw - 32px));
+        margin: 24px auto 72px;
+      }
+
+      .shell {
+        background: var(--panel);
+        border: 1px solid rgba(217, 210, 200, 0.8);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .hero {
+        padding: 28px 28px 22px;
+        border-bottom: 1px solid var(--line);
+        background:
+          linear-gradient(135deg, rgba(159, 58, 40, 0.07), transparent 40%),
+          linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.2));
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.05;
+      }
+
+      .subtitle {
+        margin: 12px 0 0;
+        max-width: 880px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .toolbar {
+        display: grid;
+        gap: 16px;
+        padding: 22px 28px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 253, 249, 0.92);
+      }
+
+      .toolbar-top {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .stat {
+        min-width: 110px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+      }
+
+      .stat-label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .stat-value {
+        display: block;
+        margin-top: 4px;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .search {
+        min-width: min(100%, 360px);
+        flex: 1 1 320px;
+      }
+
+      input[type="search"] {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+        font: inherit;
+      }
+
+      .filters,
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      button {
+        cursor: pointer;
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 10px 14px;
+        font: inherit;
+      }
+
+      button.active[data-filter="keep"],
+      .decision-btn.keep.active {
+        border-color: color-mix(in srgb, var(--keep) 38%, white);
+        background: var(--keep-bg);
+        color: var(--keep);
+      }
+
+      button.active[data-filter="delete"],
+      .decision-btn.delete.active {
+        border-color: color-mix(in srgb, var(--delete) 34%, white);
+        background: var(--delete-bg);
+        color: var(--delete);
+      }
+
+      button.active[data-filter="pending"] {
+        border-color: color-mix(in srgb, var(--accent) 34%, white);
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .content {
+        padding: 18px 20px 28px;
+      }
+
+      details.pillar {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.52);
+        overflow: hidden;
+      }
+
+      details.pillar:first-child {
+        margin-top: 0;
+      }
+
+      summary {
+        list-style: none;
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 16px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.36);
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .pillar-title {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .pillar-zh {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .pillar-role {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .pillar-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .meta-chip {
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+        padding: 4px 16px 16px;
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 18px;
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.2;
+      }
+
+      .card .zh {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .card .slug {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+      }
+
+      .decision-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .decision-btn {
+        flex: 1;
+        border-radius: 12px;
+        padding: 11px 12px;
+      }
+
+      .field {
+        margin-top: 14px;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 88px;
+        resize: vertical;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #fffdfa;
+        padding: 12px 14px;
+        font: inherit;
+        line-height: 1.45;
+      }
+
+      .empty {
+        padding: 36px 22px 42px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      @media (max-width: 880px) {
+        .page {
+          width: min(100vw - 18px, 1440px);
+          margin: 10px auto 48px;
+        }
+
+        .shell {
+          border-radius: 20px;
+        }
+
+        .hero,
+        .toolbar {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        .content {
+          padding: 14px 12px 22px;
+        }
+
+        .card-grid {
+          grid-template-columns: 1fr;
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+
+        summary {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="shell">
+        <section class="hero">
+          <p class="eyebrow">Pillar Dossier Review · 第一层母题审核</p>
+          <h1>Pillar Dossier Review</h1>
+          <p class="subtitle">
+            Review only the first-layer dossier worlds. Use Keep or Delete, then leave notes and suggestions.
+            Data is autosaved in localStorage so you can keep reviewing over multiple sessions.
+          </p>
+        </section>
+
+        <section class="toolbar">
+          <div class="toolbar-top">
+            <div class="stats" id="stats"></div>
+            <div class="actions">
+              <button type="button" id="export-json">Export JSON</button>
+              <button type="button" id="export-md">Export Markdown</button>
+              <button type="button" id="reset-all">Reset</button>
+            </div>
+          </div>
+
+          <div class="controls">
+            <div class="search">
+              <input type="search" id="search" placeholder="Search dossier title / 中文名 / slug" />
+            </div>
+            <div class="filters" id="filters">
+              <button type="button" data-filter="all" class="active">All</button>
+              <button type="button" data-filter="pending">Pending</button>
+              <button type="button" data-filter="keep">Keep</button>
+              <button type="button" data-filter="delete">Delete</button>
+            </div>
+          </div>
+        </section>
+
+        <main class="content" id="app"></main>
+      </div>
+    </div>
+
+    <script>
+      const PILLARS = [{"slug":"digital-china","title":"Digital China","zh":"数字中国","role":"Online behavior, apps, and social codes","dossiers":[{"slug":"super-app-life","title":"Super-App Life","zh":"超级应用生活"},{"slug":"platform-ecologies","title":"Platform Ecologies","zh":"平台生态"},{"slug":"xiaohongshu-internet","title":"Xiaohongshu Internet","zh":"小红书互联网"},{"slug":"douyin-short-video","title":"Douyin Short Video","zh":"抖音短视频"},{"slug":"bilibili-worlds","title":"Bilibili Worlds","zh":"B站文化世界"},{"slug":"wechat-infrastructure","title":"WeChat Infrastructure","zh":"微信基础设施"},{"slug":"meme-universes","title":"Meme Universes","zh":"梗与表情包宇宙"},{"slug":"reaction-image-culture","title":"Reaction Image Culture","zh":"反应图文化"},{"slug":"internet-slang","title":"Internet Slang","zh":"网络流行语"},{"slug":"bullet-comments","title":"Bullet Comments","zh":"弹幕文化"},{"slug":"livestream-worlds","title":"Livestream Worlds","zh":"直播世界"},{"slug":"shopping-entertainment","title":"Shopping Entertainment","zh":"购物娱乐化"},{"slug":"fandom-labor","title":"Fandom Labor","zh":"饭圈劳动"},{"slug":"group-chat-intimacy","title":"Group Chat Intimacy","zh":"群聊亲密关系"},{"slug":"creator-culture","title":"Creator Culture","zh":"创作者文化"},{"slug":"online-reputation","title":"Online Reputation","zh":"线上名声与面子"},{"slug":"viral-rituals","title":"Viral Rituals","zh":"病毒式网络仪式"},{"slug":"digital-nostalgia","title":"Digital Nostalgia","zh":"数字怀旧"},{"slug":"cross-border-apps","title":"Cross-Border Apps","zh":"跨境平台相遇"},{"slug":"coded-expression","title":"Coded Expression","zh":"编码表达"},{"slug":"comment-section-emotion","title":"Comment-Section Emotion","zh":"评论区公共情绪"},{"slug":"algorithmic-life","title":"Algorithmic Life","zh":"算法生活"},{"slug":"mini-program-life","title":"Mini-Program Life","zh":"小程序生活"},{"slug":"internet-justice","title":"Internet Justice","zh":"互联网正义"},{"slug":"humor-and-self-mockery","title":"Humor and Self-Mockery","zh":"网络幽默与自嘲"}]},{"slug":"taste-life","title":"Taste & Life","zh":"饮食与生活","role":"Body logic, rituals, food, and domestic comfort","dossiers":[{"slug":"hot-water-logic","title":"Hot Water Logic","zh":"热水与温度逻辑"},{"slug":"tcm-wellness","title":"TCM Wellness","zh":"中式日常养生"},{"slug":"food-as-medicine","title":"Food as Medicine","zh":"药食同源"},{"slug":"tea-worlds","title":"Tea Worlds","zh":"茶世界"},{"slug":"breakfast-china","title":"Breakfast China","zh":"中国早餐"},{"slug":"congee-and-soup","title":"Congee and Soup","zh":"粥与汤体系"},{"slug":"street-food-ecology","title":"Street Food Ecology","zh":"街头小吃生态"},{"slug":"banquet-codes","title":"Banquet Codes","zh":"饭局规则"},{"slug":"hosting-and-hospitality","title":"Hosting and Hospitality","zh":"待客与款待"},{"slug":"home-cooking-memory","title":"Home Cooking Memory","zh":"家常味觉记忆"},{"slug":"regional-taste-systems","title":"Regional Taste Systems","zh":"地域口味体系"},{"slug":"festival-foods","title":"Festival Foods","zh":"节庆食物"},{"slug":"snack-culture","title":"Snack Culture","zh":"零食文化"},{"slug":"kitchen-objects","title":"Kitchen Objects","zh":"厨房器物"},{"slug":"thermos-and-lunchbox","title":"Thermos and Lunchbox","zh":"保温杯与饭盒"},{"slug":"delivery-life","title":"Delivery Life","zh":"外卖生活"},{"slug":"late-night-eating","title":"Late-Night Eating","zh":"夜宵文化"},{"slug":"drinking-rituals","title":"Drinking Rituals","zh":"饮酒仪式"},{"slug":"fruit-and-desserts","title":"Fruit and Desserts","zh":"水果与甜品"},{"slug":"seasonal-nourishment","title":"Seasonal Nourishment","zh":"顺时滋养"},{"slug":"sleep-and-rest-habits","title":"Sleep and Rest Habits","zh":"睡眠与休息习惯"},{"slug":"indoor-comfort-culture","title":"Indoor Comfort Culture","zh":"室内舒适文化"},{"slug":"qigong-and-gentle-movement","title":"Qigong and Gentle Movement","zh":"气功与温和运动"},{"slug":"domestic-order","title":"Domestic Order","zh":"家居秩序"},{"slug":"practical-thrift","title":"Practical Thrift","zh":"实用与节俭"}]},{"slug":"aesthetic-china","title":"Aesthetic China","zh":"审美中国","role":"Myth, style, craft, and the visual logic of beauty","dossiers":[{"slug":"mythology-reborn","title":"Mythology Reborn","zh":"神话重生"},{"slug":"journey-to-the-west","title":"Journey to the West","zh":"西游再生"},{"slug":"ne-zha-worlds","title":"Ne Zha Worlds","zh":"哪吒宇宙"},{"slug":"gods-and-demons","title":"Gods and Demons","zh":"神妖仙想象"},{"slug":"chinese-fantasy-visuals","title":"Chinese Fantasy Visuals","zh":"中式奇幻视觉"},{"slug":"guochao","title":"Guochao","zh":"国潮"},{"slug":"hanfu-dress-worlds","title":"Hanfu Dress Worlds","zh":"汉服世界"},{"slug":"tradition-in-daily-wear","title":"Tradition in Daily Wear","zh":"传统服饰回归"},{"slug":"pop-mart-worlds","title":"Pop Mart Worlds","zh":"泡泡玛特世界"},{"slug":"cute-economies","title":"Cute Economies","zh":"可爱经济"},{"slug":"game-aesthetics","title":"Game Aesthetics","zh":"游戏审美"},{"slug":"donghua-visual-culture","title":"Donghua Visual Culture","zh":"国漫视觉文化"},{"slug":"architecture-philosophy","title":"Architecture Philosophy","zh":"建筑空间哲学"},{"slug":"gardens-and-worldmaking","title":"Gardens and Worldmaking","zh":"园林与造境"},{"slug":"brush-and-ink-thinking","title":"Brush and Ink Thinking","zh":"笔墨思维"},{"slug":"chinese-color-systems","title":"Chinese Color Systems","zh":"中国色彩体系"},{"slug":"craft-and-material-beauty","title":"Craft and Material Beauty","zh":"工艺与材料美学"},{"slug":"ceramic-lacquer-jade","title":"Ceramic, Lacquer, Jade","zh":"瓷漆玉器"},{"slug":"opera-and-costume","title":"Opera and Costume","zh":"戏曲与戏服"},{"slug":"urban-chinese-mood","title":"Urban Chinese Mood","zh":"城市摄影气质"},{"slug":"minimal-vs-ornate","title":"Minimal vs Ornate","zh":"极简与繁饰"},{"slug":"festival-visuality","title":"Festival Visuality","zh":"节庆视觉"},{"slug":"gift-and-packaging-beauty","title":"Gift and Packaging Beauty","zh":"包装送礼美学"},{"slug":"beauty-standards","title":"Beauty Standards","zh":"审美标准"},{"slug":"soft-luxury-taste","title":"Soft Luxury Taste","zh":"轻奢与质感"}]},{"slug":"mind-china","title":"Mind China","zh":"中国思维","role":"Values, worldview, social reasoning, and life scripts","dossiers":[{"slug":"confucian-residues","title":"Confucian Residues","zh":"儒家残留"},{"slug":"daoist-sensibilities","title":"Daoist Sensibilities","zh":"道家感受力"},{"slug":"buddhist-daily-language","title":"Buddhist Daily Language","zh":"佛教日常语言"},{"slug":"balance-thinking","title":"Balance Thinking","zh":"平衡思维"},{"slug":"fate-and-timing","title":"Fate and Timing","zh":"命运与时机"},{"slug":"face-and-favor","title":"Face and Favor","zh":"面子与人情"},{"slug":"reciprocity-and-duty","title":"Reciprocity and Duty","zh":"回报与责任"},{"slug":"shame-and-dignity","title":"Shame and Dignity","zh":"羞耻与体面"},{"slug":"family-duty","title":"Family Duty","zh":"家庭责任"},{"slug":"parenting-logic","title":"Parenting Logic","zh":"育儿逻辑"},{"slug":"exams-and-merit","title":"Exams and Merit","zh":"考试与 merit"},{"slug":"neijuan-tangping-bailan","title":"Neijuan / Tangping / Bailan","zh":"内卷躺平摆烂"},{"slug":"effort-and-endurance","title":"Effort and Endurance","zh":"努力与忍耐"},{"slug":"strategic-pragmatism","title":"Strategic Pragmatism","zh":"策略性实用主义"},{"slug":"conflict-avoidance","title":"Conflict Avoidance","zh":"避免冲突"},{"slug":"belonging-and-self-presentation","title":"Belonging and Self-Presentation","zh":"归属与自我呈现"},{"slug":"tcm-as-worldview","title":"TCM as Worldview","zh":"中医作为观看方式"},{"slug":"body-mind-holism","title":"Body-Mind Holism","zh":"身心整体观"},{"slug":"gender-in-chinese-terms","title":"Gender in Chinese Terms","zh":"中国语境下的性别气质"},{"slug":"romance-and-restraint","title":"Romance and Restraint","zh":"爱情与克制"},{"slug":"virtue-and-being-decent","title":"Virtue and Being Decent","zh":"德性与做人"},{"slug":"success-and-security","title":"Success and Security","zh":"成功与安全感"},{"slug":"generational-drift","title":"Generational Drift","zh":"代际价值漂移"},{"slug":"long-game-thinking","title":"Long-Game Thinking","zh":"长期主义"},{"slug":"practical-belief","title":"Practical Belief","zh":"实用信念与迷信"}]},{"slug":"living-china","title":"Living China","zh":"真实中国","role":"Cities, ordinary rhythms, and how contemporary life is lived","dossiers":[{"slug":"city-personalities","title":"City Personalities","zh":"城市性格"},{"slug":"tier-system-lives","title":"Tier-System Lives","zh":"层级城市生活"},{"slug":"citywalk-and-strolling","title":"Citywalk and Strolling","zh":"Citywalk 与散步"},{"slug":"neighborhood-rhythms","title":"Neighborhood Rhythms","zh":"街区节律"},{"slug":"apartment-interiors","title":"Apartment Interiors","zh":"居住空间与公寓生活"},{"slug":"public-leisure-rituals","title":"Public Leisure Rituals","zh":"公共休闲仪式"},{"slug":"park-life-and-square-dancing","title":"Park Life and Square Dancing","zh":"公园与广场舞"},{"slug":"night-markets","title":"Night Markets","zh":"夜市与夜间经济"},{"slug":"convenience-infrastructure","title":"Convenience Infrastructure","zh":"便利型城市设施"},{"slug":"rail-and-commuting-life","title":"Rail and Commuting Life","zh":"铁路与通勤生活"},{"slug":"youth-life-scripts","title":"Youth Life Scripts","zh":"青年人生脚本"},{"slug":"dating-and-marriage-pressure","title":"Dating and Marriage Pressure","zh":"恋爱婚姻压力"},{"slug":"companions-and-dazi","title":"Companions and Dazi","zh":"搭子与同伴关系"},{"slug":"office-life","title":"Office Life","zh":"办公室生活"},{"slug":"migration-and-aspiration","title":"Migration and Aspiration","zh":"流动与向上愿望"},{"slug":"county-town-aspiration","title":"County-Town Aspiration","zh":"县城抱负"},{"slug":"rural-change","title":"Rural Change","zh":"乡村变化"},{"slug":"return-home-culture","title":"Return-Home Culture","zh":"返乡文化"},{"slug":"aging-and-care","title":"Aging and Care","zh":"老龄化与照护"},{"slug":"childrearing-households","title":"Childrearing Households","zh":"代际育儿共居"},{"slug":"pets-and-plants","title":"Pets and Plants","zh":"宠物与植物"},{"slug":"weather-and-urban-mood","title":"Weather and Urban Mood","zh":"天气与城市情绪"},{"slug":"public-etiquette","title":"Public Etiquette","zh":"公共礼仪"},{"slug":"markets-and-malls","title":"Markets and Malls","zh":"市场与商场"},{"slug":"order-as-lived-experience","title":"Order as Lived Experience","zh":"秩序作为生活体验"}]},{"slug":"future-china","title":"Future China","zh":"未来中国","role":"Tech, infrastructure, and everyday future-facing systems","dossiers":[{"slug":"china-ai-ecosystem","title":"China AI Ecosystem","zh":"中国 AI 生态"},{"slug":"ai-agents-in-daily-life","title":"AI Agents in Daily Life","zh":"日常 AI Agent"},{"slug":"cashless-life","title":"Cashless Life","zh":"无现金生活"},{"slug":"platform-commerce","title":"Platform Commerce","zh":"平台商业"},{"slug":"logistics-and-instant-delivery","title":"Logistics and Instant Delivery","zh":"物流与即时配送"},{"slug":"ev-life","title":"EV Life","zh":"新能源汽车生活"},{"slug":"battery-supply-chains","title":"Battery Supply Chains","zh":"电池与供应链"},{"slug":"manufacturing-as-culture","title":"Manufacturing as Culture","zh":"制造业作为文化"},{"slug":"factory-intelligence","title":"Factory Intelligence","zh":"工厂智能化"},{"slug":"robotics-imagination","title":"Robotics Imagination","zh":"机器人想象"},{"slug":"hardware-ecosystems","title":"Hardware Ecosystems","zh":"硬件生态"},{"slug":"smart-city-habits","title":"Smart City Habits","zh":"智慧城市习惯"},{"slug":"surveillance-and-trust","title":"Surveillance and Trust","zh":"监控与数字信任"},{"slug":"green-transition","title":"Green Transition","zh":"绿色转型"},{"slug":"solar-and-energy-systems","title":"Solar and Energy Systems","zh":"光伏与能源体系"},{"slug":"space-and-science-ambition","title":"Space and Science Ambition","zh":"航天与科学雄心"},{"slug":"rail-and-infrastructure-modernity","title":"Rail and Infrastructure Modernity","zh":"高铁与基础设施现代性"},{"slug":"tech-brands-abroad","title":"Tech Brands Abroad","zh":"科技品牌出海"},{"slug":"cross-border-e-commerce","title":"Cross-Border E-commerce","zh":"跨境电商"},{"slug":"biotech-and-future-medicine","title":"Biotech and Future Medicine","zh":"生物科技与未来医疗"},{"slug":"edtech-futures","title":"EdTech Futures","zh":"教育科技未来"},{"slug":"urban-automation","title":"Urban Automation","zh":"城市自动化"},{"slug":"future-of-work","title":"Future of Work","zh":"未来工作"},{"slug":"national-progress-narrative","title":"National Progress Narrative","zh":"国家进步叙事"},{"slug":"tech-confidence-and-anxiety","title":"Tech Confidence and Anxiety","zh":"技术自信与焦虑"}]}];
+      const STORAGE_KEY = 'cnjianghu-pillar-dossier-review-v1';
+      const app = document.getElementById('app');
+      const stats = document.getElementById('stats');
+      const searchInput = document.getElementById('search');
+      const filters = document.getElementById('filters');
+
+      let activeFilter = 'all';
+      let searchValue = '';
+      let reviews = loadReviews();
+
+      function reviewKey(pillarSlug, dossierSlug) {
+        return pillarSlug + ':' + dossierSlug;
+      }
+
+      function createInitialReviews() {
+        const initial = {};
+        for (const pillar of PILLARS) {
+          for (const dossier of pillar.dossiers) {
+            initial[reviewKey(pillar.slug, dossier.slug)] = {
+              decision: '',
+              note: '',
+              suggestion: '',
+            };
+          }
+        }
+        return initial;
+      }
+
+      function loadReviews() {
+        const initial = createInitialReviews();
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return initial;
+          const parsed = JSON.parse(raw);
+          return Object.assign(initial, parsed);
+        } catch {
+          return initial;
+        }
+      }
+
+      function saveReviews() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
+      }
+
+      function summarize() {
+        let keep = 0;
+        let remove = 0;
+        let total = 0;
+
+        for (const pillar of PILLARS) {
+          for (const dossier of pillar.dossiers) {
+            total += 1;
+            const decision = reviews[reviewKey(pillar.slug, dossier.slug)]?.decision;
+            if (decision === 'keep') keep += 1;
+            if (decision === 'delete') remove += 1;
+          }
+        }
+
+        return {
+          total,
+          keep,
+          delete: remove,
+          pending: total - keep - remove,
+        };
+      }
+
+      function matchesFilter(record) {
+        if (activeFilter === 'all') return true;
+        if (activeFilter === 'pending') return !record.decision;
+        return record.decision === activeFilter;
+      }
+
+      function matchesSearch(dossier) {
+        if (!searchValue) return true;
+        const haystack = [dossier.title, dossier.zh, dossier.slug].join(' ').toLowerCase();
+        return haystack.includes(searchValue);
+      }
+
+      function escapeHtml(value) {
+        return value
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
+      function renderStats() {
+        const summary = summarize();
+        stats.innerHTML = [
+          ['Total', summary.total],
+          ['Keep', summary.keep],
+          ['Delete', summary.delete],
+          ['Pending', summary.pending],
+        ].map(([label, value]) => {
+          return '<div class="stat"><span class="stat-label">' + label + '</span><span class="stat-value">' + value + '</span></div>';
+        }).join('');
+      }
+
+      function render() {
+        renderStats();
+
+        const sections = PILLARS.map((pillar) => {
+          const filtered = pillar.dossiers.filter((dossier) => {
+            const record = reviews[reviewKey(pillar.slug, dossier.slug)];
+            return matchesFilter(record) && matchesSearch(dossier);
+          });
+
+          if (!filtered.length) {
+            return '';
+          }
+
+          const pillarStats = filtered.reduce((acc, dossier) => {
+            const decision = reviews[reviewKey(pillar.slug, dossier.slug)]?.decision;
+            acc.total += 1;
+            if (decision === 'keep') acc.keep += 1;
+            if (decision === 'delete') acc.delete += 1;
+            return acc;
+          }, { total: 0, keep: 0, delete: 0 });
+
+          const cards = filtered.map((dossier) => {
+            const key = reviewKey(pillar.slug, dossier.slug);
+            const record = reviews[key];
+
+            return `
+              <article class="card">
+                <h3>${escapeHtml(dossier.title)}</h3>
+                <div class="zh">${escapeHtml(dossier.zh)}</div>
+                <div class="slug">${escapeHtml(key)}</div>
+
+                <div class="decision-row">
+                  <button
+                    type="button"
+                    class="decision-btn keep ${record.decision === 'keep' ? 'active' : ''}"
+                    data-action="decision"
+                    data-key="${escapeHtml(key)}"
+                    data-value="keep"
+                  >保留 · Keep</button>
+                  <button
+                    type="button"
+                    class="decision-btn delete ${record.decision === 'delete' ? 'active' : ''}"
+                    data-action="decision"
+                    data-key="${escapeHtml(key)}"
+                    data-value="delete"
+                  >删除 · Delete</button>
+                </div>
+
+                <div class="field">
+                  <label for="note-${escapeHtml(key)}">备注</label>
+                  <textarea id="note-${escapeHtml(key)}" data-action="text" data-field="note" data-key="${escapeHtml(key)}" placeholder="为什么保留 / 删除？">${escapeHtml(record.note)}</textarea>
+                </div>
+
+                <div class="field">
+                  <label for="suggestion-${escapeHtml(key)}">建议</label>
+                  <textarea id="suggestion-${escapeHtml(key)}" data-action="text" data-field="suggestion" data-key="${escapeHtml(key)}" placeholder="后续可合并、改名、缩小、延后等建议">${escapeHtml(record.suggestion)}</textarea>
+                </div>
+              </article>
+            `;
+          }).join('');
+
+          return `
+            <details class="pillar" open>
+              <summary>
+                <div>
+                  <div class="pillar-title">${escapeHtml(pillar.title)}</div>
+                  <span class="pillar-zh">${escapeHtml(pillar.zh)}</span>
+                  <div class="pillar-role">${escapeHtml(pillar.role)}</div>
+                </div>
+                <div class="pillar-meta">
+                  <span class="meta-chip">Visible ${pillarStats.total}</span>
+                  <span class="meta-chip">Keep ${pillarStats.keep}</span>
+                  <span class="meta-chip">Delete ${pillarStats.delete}</span>
+                </div>
+              </summary>
+              <div class="card-grid">${cards}</div>
+            </details>
+          `;
+        }).filter(Boolean).join('');
+
+        app.innerHTML = sections || '<div class="empty">No dossiers match the current search/filter.</div>';
+      }
+
+      function buildMarkdown() {
+        const lines = ['# Pillar Dossier Review', ''];
+        for (const pillar of PILLARS) {
+          lines.push('## ' + pillar.title + ' | ' + pillar.zh);
+          lines.push('');
+          for (const dossier of pillar.dossiers) {
+            const record = reviews[reviewKey(pillar.slug, dossier.slug)];
+            if (!record.decision) continue;
+            lines.push('- ' + dossier.title + ' | ' + dossier.zh + ' — ' + record.decision);
+            if (record.note) lines.push('  Note: ' + record.note);
+            if (record.suggestion) lines.push('  Suggestion: ' + record.suggestion);
+          }
+          lines.push('');
+        }
+        return lines.join('\n').trim() + '\n';
+      }
+
+      function download(filename, content, type) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 500);
+      }
+
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        if (target.matches('[data-action="decision"]')) {
+          const key = target.dataset.key;
+          const value = target.dataset.value;
+          const current = reviews[key].decision;
+          reviews[key].decision = current === value ? '' : value;
+          saveReviews();
+          render();
+        }
+
+        if (target.id === 'export-json') {
+          download('pillar-dossier-review.json', JSON.stringify(reviews, null, 2), 'application/json');
+        }
+
+        if (target.id === 'export-md') {
+          download('pillar-dossier-review.md', buildMarkdown(), 'text/markdown');
+        }
+
+        if (target.id === 'reset-all') {
+          if (confirm('Reset all review decisions, notes, and suggestions?')) {
+            reviews = createInitialReviews();
+            saveReviews();
+            render();
+          }
+        }
+
+        if (target.dataset.filter) {
+          activeFilter = target.dataset.filter;
+          [...filters.querySelectorAll('button')].forEach((button) => {
+            button.classList.toggle('active', button.dataset.filter === activeFilter);
+          });
+          render();
+        }
+      });
+
+      document.addEventListener('input', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        if (target === searchInput) {
+          searchValue = target.value.trim().toLowerCase();
+          render();
+        }
+
+        if (target.matches('[data-action="text"]')) {
+          const key = target.dataset.key;
+          const field = target.dataset.field;
+          reviews[key][field] = target.value;
+          saveReviews();
+          renderStats();
+        }
+      });
+
+      render();
+    </script>
+  </body>
+</html>

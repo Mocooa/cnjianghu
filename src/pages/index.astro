@@ -3,7 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroSection from '../components/home/HeroSection.astro';
 import PillarGrid from '../components/home/PillarGrid.astro';
 import ArticleCard from '../components/content/ArticleCard.astro';
+import TodayQuickBiteRotator from '../components/content/TodayQuickBiteRotator';
 import { getCollection } from 'astro:content';
+import { selectDailyQuickBites, serializeQuickBiteEntry } from '../data/quick-bite-rotation.mjs';
 
 // Get latest articles
 const allDeepDives = await getCollection('deep-dives', ({ data }) => !data.draft);
@@ -12,41 +14,38 @@ const latestArticles = allDeepDives
   .slice(0, 4);
 
 const allQuickBites = await getCollection('quick-bites', ({ data }) => !data.draft);
-const latestBites = allQuickBites
-  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-  .slice(0, 4);
+const serializedQuickBites = allQuickBites.map(serializeQuickBiteEntry);
+const initialTodayBites = selectDailyQuickBites(serializedQuickBites, {
+  now: new Date(),
+  timeZone: 'Asia/Shanghai',
+  maxItems: 4,
+});
 ---
 
 <BaseLayout title="Home">
   <HeroSection />
 
   {/* Latest Quick Bites */}
-  {latestBites.length > 0 && (
+  {serializedQuickBites.length > 0 && (
     <section class="py-12 border-t border-ink-200 dark:border-ink-800">
       <div class="container-wide">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
             Today's Quick Bites
           </h2>
-          <a href="/today" class="text-sm font-ui text-vermilion hover:underline">
+          <a href="/today" class="text-sm font-ui text-vermilion-dark dark:text-vermilion-light hover:text-vermilion hover:underline">
             View all →
           </a>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {latestBites.map(bite => (
-            <div class="p-4 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
-              <span class="text-xs font-ui font-semibold uppercase tracking-wider text-vermilion">
-                {bite.data.type.replace(/-/g, ' ')}
-              </span>
-              <h3 class="mt-1 font-heading font-semibold text-ink-900 dark:text-ink-50 text-base leading-snug">
-                {bite.data.title}
-              </h3>
-              <p class="mt-1 text-sm text-ink-500 dark:text-ink-400 line-clamp-2">
-                {bite.data.summary}
-              </p>
-            </div>
-          ))}
-        </div>
+        <p class="mb-4 text-sm font-ui text-ink-500 dark:text-ink-400">
+          Rotates daily on Shanghai time. If a type is missing, the remaining slots fall back to the newest available bites.
+        </p>
+        <TodayQuickBiteRotator
+          client:load
+          items={serializedQuickBites}
+          initialItems={initialTodayBites}
+          variant="home"
+        />
       </div>
     </section>
   )}
@@ -59,7 +58,7 @@ const latestBites = allQuickBites
           <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
             Latest Deep Dives
           </h2>
-          <a href="/explore" class="text-sm font-ui text-vermilion hover:underline">
+          <a href="/explore" class="text-sm font-ui text-vermilion-dark dark:text-vermilion-light hover:text-vermilion hover:underline">
             View all →
           </a>
         </div>
@@ -87,7 +86,7 @@ const latestBites = allQuickBites
   </div>
 
   {/* Empty state for new site */}
-  {latestArticles.length === 0 && latestBites.length === 0 && (
+  {latestArticles.length === 0 && serializedQuickBites.length === 0 && (
     <section class="py-16">
       <div class="container-article text-center">
         <div class="text-6xl mb-4">📝</div>

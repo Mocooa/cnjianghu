@@ -1,9 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import TodayQuickBiteRotator from '../../components/content/TodayQuickBiteRotator';
 import { getCollection } from 'astro:content';
+import { selectDailyQuickBites, serializeQuickBiteEntry } from '../../data/quick-bite-rotation.mjs';
 
 const bites = await getCollection('quick-bites', ({ data }) => !data.draft);
 const sorted = bites.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const serializedBites = sorted.map(serializeQuickBiteEntry);
+const initialTodayBites = selectDailyQuickBites(serializedBites, {
+  now: new Date(),
+  timeZone: 'Asia/Shanghai',
+  maxItems: 4,
+});
 
 const typeLabels: Record<string, string> = {
   'word-of-the-day': 'Word of the Day',
@@ -20,7 +28,11 @@ const typeColors: Record<string, string> = {
 };
 ---
 
-<BaseLayout title="Today" description="Daily quick bites into Chinese culture — words, visuals, trends, and surprises.">
+<BaseLayout
+  title="Today"
+  description="Daily quick bites into Chinese culture — words, visuals, trends, and surprises."
+  searchIndex={true}
+>
   <div class="container-wide py-12">
     <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 mb-2">
       Today
@@ -29,46 +41,78 @@ const typeColors: Record<string, string> = {
       Quick cultural bites — a new word, a trending topic, a visual, or a surprising fact. Every day.
     </p>
 
-    {sorted.length > 0 ? (
-      <div class="space-y-6">
-        {sorted.map(bite => (
-          <article
-            id={bite.id}
-            class="p-6 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900"
-          >
-            <div class="flex items-center gap-3 mb-3">
-              <span
-                class="text-xs font-ui font-semibold uppercase tracking-wider"
-                style={`color: var(--color-${typeColors[bite.data.type] ?? 'vermilion'})`}
-              >
-                {typeLabels[bite.data.type] ?? bite.data.type}
-              </span>
-              <span class="text-xs text-ink-400 dark:text-ink-500">
-                {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(bite.data.date)}
-              </span>
-            </div>
-
-            {bite.data.chinese_term && (
-              <div class="mb-2">
-                <span class="text-2xl font-chinese font-semibold text-ink-900 dark:text-ink-50">
-                  {bite.data.chinese_term}
-                </span>
-                {bite.data.pinyin && (
-                  <span class="ml-2 text-sm text-ink-400 italic">{bite.data.pinyin}</span>
-                )}
-              </div>
-            )}
-
-            <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50 mb-2">
-              {bite.data.title}
+    {serializedBites.length > 0 ? (
+      <>
+        <section class="mb-12">
+          <div class="mb-4 flex items-center justify-between gap-4">
+            <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+              Today's rotating selection
             </h2>
+            <span class="text-sm font-ui text-ink-500 dark:text-ink-400">
+              Shanghai time
+            </span>
+          </div>
+          <p class="mb-6 max-w-2xl text-sm font-ui text-ink-500 dark:text-ink-400">
+            Each day picks up to four bites. The selector tries to surface one from each quick-bite type first, then fills remaining slots from the newest available posts.
+          </p>
+          <TodayQuickBiteRotator
+            client:load
+            items={serializedBites}
+            initialItems={initialTodayBites}
+            variant="today"
+          />
+        </section>
 
-            <p class="text-ink-600 dark:text-ink-400 leading-relaxed">
-              {bite.data.summary}
+        <section class="border-t border-ink-200 pt-10 dark:border-ink-800">
+          <div class="mb-6">
+            <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+              Quick Bite archive
+            </h2>
+            <p class="mt-2 max-w-2xl text-sm font-ui text-ink-500 dark:text-ink-400">
+              The full list stays chronological below, so older bites remain browseable even while the top section rotates daily.
             </p>
-          </article>
-        ))}
-      </div>
+          </div>
+
+          <div class="space-y-6">
+            {sorted.map(bite => (
+              <article
+                class="p-6 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900"
+              >
+                <div class="flex items-center gap-3 mb-3">
+                  <span
+                    class="text-xs font-ui font-semibold uppercase tracking-wider"
+                    style={`color: var(--color-${typeColors[bite.data.type] ?? 'vermilion'})`}
+                  >
+                    {typeLabels[bite.data.type] ?? bite.data.type}
+                  </span>
+                  <span class="text-xs text-ink-400 dark:text-ink-500">
+                    {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(bite.data.date)}
+                  </span>
+                </div>
+
+                {bite.data.chinese_term && (
+                  <div class="mb-2">
+                    <span class="text-2xl font-chinese font-semibold text-ink-900 dark:text-ink-50">
+                      {bite.data.chinese_term}
+                    </span>
+                    {bite.data.pinyin && (
+                      <span class="ml-2 text-sm text-ink-400 italic">{bite.data.pinyin}</span>
+                    )}
+                  </div>
+                )}
+
+                <h3 id={bite.id} class="scroll-mt-24 text-xl font-heading font-semibold text-ink-900 dark:text-ink-50 mb-2">
+                  {bite.data.title}
+                </h3>
+
+                <p class="text-ink-600 dark:text-ink-400 leading-relaxed">
+                  {bite.data.summary}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </>
     ) : (
       <div class="text-center py-16">
         <div class="text-5xl mb-4">☀️</div>

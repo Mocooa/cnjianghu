@@ -1,9 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
+import {
+  entryIsConceptNote,
+  formatEvidenceType,
+  getGlossaryContext,
+} from '../../data/glossary-index.mjs';
+import {
+  getArchiveMapDossierHref,
+  getExploreDossierHref,
+} from '../../data/dossier-links.mjs';
 
 export async function getStaticPaths() {
-  const entries = await getCollection('glossary');
+  const entries = await getCollection('glossary', ({ data }) => !data.draft);
   return entries.map(entry => ({
     params: { term: entry.id },
     props: { entry },
@@ -12,12 +21,21 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const isConceptNote = entryIsConceptNote(entry);
+const context = getGlossaryContext(entry);
+const evidenceLabel = formatEvidenceType(entry.data.evidence_type);
+const exploreDossierHref = getExploreDossierHref(context.pillar.slug, context.dossier);
+const archiveMapDossierHref = getArchiveMapDossierHref(context.pillar.slug, context.dossier);
 ---
 
-<BaseLayout title={`${entry.data.chinese} (${entry.data.pinyin}) — ${entry.data.title}`} description={entry.data.short_definition}>
+<BaseLayout
+  title={`${entry.data.title} — Cultural Glossary`}
+  description={entry.data.short_definition}
+  searchIndex={true}
+>
   <div class="container-article py-12">
     {/* Breadcrumb */}
-    <nav class="flex items-center gap-2 text-sm font-ui text-ink-400 dark:text-ink-500 mb-8">
+    <nav class="flex items-center gap-2 text-sm font-ui text-ink-400 dark:text-ink-500 mb-8" data-pagefind-ignore>
       <a href="/" class="hover:text-vermilion transition-colors">Home</a>
       <span>/</span>
       <a href="/glossary" class="hover:text-vermilion transition-colors">Glossary</a>
@@ -27,6 +45,17 @@ const { Content } = await render(entry);
 
     {/* Header */}
     <header class="mb-8">
+      <div class="mb-3 flex flex-wrap gap-2">
+        <span class:list={[
+          'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-ui font-medium',
+          isConceptNote
+            ? 'bg-vermilion/10 text-vermilion'
+            : 'bg-ink-100 dark:bg-ink-800 text-ink-600 dark:text-ink-400',
+        ]}>
+          {isConceptNote ? 'Concept note' : 'Term'}
+        </span>
+      </div>
+
       <div class="font-chinese text-6xl md:text-8xl text-ink-200 dark:text-ink-800 mb-2 select-none" aria-hidden="true">
         {entry.data.chinese}
       </div>
@@ -40,6 +69,47 @@ const { Content } = await render(entry);
         {entry.data.short_definition}
       </p>
 
+      {isConceptNote && (
+        <p class="mt-3 max-w-2xl text-sm font-ui text-ink-500 dark:text-ink-400">
+          This page is a background note rather than a single natural-language term. It separates verified baseline facts from common usage and editorial interpretation.
+        </p>
+      )}
+
+      <div class="mt-6 grid gap-3 md:grid-cols-3" data-pagefind-ignore>
+        <a
+          href={`/explore/${context.pillar.slug}`}
+          class="rounded-xl border border-ink-200 dark:border-ink-800 bg-ink-50/80 dark:bg-ink-900/60 px-4 py-3 hover:border-vermilion transition-colors"
+        >
+          <div class="text-[11px] font-ui uppercase tracking-[0.16em] text-ink-400 dark:text-ink-500">
+            Pillar
+          </div>
+          <div class="mt-1 text-sm font-ui font-semibold text-ink-800 dark:text-ink-100">
+            {context.pillar.name}
+          </div>
+          <div class="text-xs font-ui text-ink-500 dark:text-ink-400">
+            {context.pillar.chinese}
+          </div>
+        </a>
+
+        <div class="rounded-xl border border-ink-200 dark:border-ink-800 bg-ink-50/80 dark:bg-ink-900/60 px-4 py-3">
+          <div class="text-[11px] font-ui uppercase tracking-[0.16em] text-ink-400 dark:text-ink-500">
+            Dossier
+          </div>
+          <div class="mt-1 text-sm font-ui font-semibold text-ink-800 dark:text-ink-100">
+            {context.dossier}
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-ink-200 dark:border-ink-800 bg-ink-50/80 dark:bg-ink-900/60 px-4 py-3">
+          <div class="text-[11px] font-ui uppercase tracking-[0.16em] text-ink-400 dark:text-ink-500">
+            Evidence
+          </div>
+          <div class="mt-1 text-sm font-ui font-semibold text-ink-800 dark:text-ink-100">
+            {evidenceLabel}
+          </div>
+        </div>
+      </div>
+
       <div class="mt-4 flex flex-wrap gap-2">
         <span class="px-2.5 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-600 dark:text-ink-400 capitalize">
           {entry.data.category}
@@ -52,14 +122,79 @@ const { Content } = await render(entry);
       </div>
     </header>
 
+    <section class="mb-10 grid gap-3 md:grid-cols-3" data-pagefind-ignore>
+      <a
+        href={`/explore/${context.pillar.slug}`}
+        class="rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/60 px-4 py-3 hover:border-vermilion transition-colors"
+      >
+        <div class="text-[11px] font-ui uppercase tracking-[0.16em] text-ink-400 dark:text-ink-500">
+          Explore pillar
+        </div>
+        <div class="mt-1 text-sm font-ui font-semibold text-ink-800 dark:text-ink-100">
+          {context.pillar.name}
+        </div>
+      </a>
+
+      <a
+        href={exploreDossierHref}
+        class="rounded-xl border border-vermilion/20 dark:border-vermilion/30 bg-vermilion/5 dark:bg-vermilion/10 px-4 py-3 hover:border-vermilion transition-colors"
+      >
+        <div class="text-[11px] font-ui uppercase tracking-[0.16em] text-ink-400 dark:text-ink-500">
+          Back to dossier
+        </div>
+        <div class="mt-1 text-sm font-ui font-semibold text-ink-800 dark:text-ink-100">
+          {context.dossier}
+        </div>
+      </a>
+
+      <a
+        href={archiveMapDossierHref}
+        class="rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900/60 px-4 py-3 hover:border-vermilion transition-colors"
+      >
+        <div class="text-[11px] font-ui uppercase tracking-[0.16em] text-ink-400 dark:text-ink-500">
+          Open on archive map
+        </div>
+        <div class="mt-1 text-sm font-ui font-semibold text-ink-800 dark:text-ink-100">
+          View planning context
+        </div>
+      </a>
+    </section>
+
     {/* Content */}
     <div class="prose dark:prose-invert">
       <Content />
     </div>
 
+    {entry.data.sources && entry.data.sources.length > 0 && (
+      <div class="mt-12 pt-8 border-t border-ink-200 dark:border-ink-800" data-pagefind-ignore>
+        <h3 class="text-sm font-ui font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400 mb-3">
+          Sources
+        </h3>
+        <ul class="space-y-3">
+          {entry.data.sources.map((source) => (
+            <li class="rounded-xl border border-ink-200 dark:border-ink-800 bg-ink-50/80 dark:bg-ink-900/60 px-4 py-3">
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noreferrer"
+                class="text-sm font-ui font-semibold text-ink-800 dark:text-ink-100 hover:text-vermilion transition-colors"
+              >
+                {source.title}
+              </a>
+              {source.platform && (
+                <div class="mt-1 text-xs font-ui text-ink-500 dark:text-ink-400">
+                  {source.platform}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
     {/* Related terms */}
     {entry.data.related_terms && entry.data.related_terms.length > 0 && (
-      <div class="mt-12 pt-8 border-t border-ink-200 dark:border-ink-800">
+      <div class="mt-12 pt-8 border-t border-ink-200 dark:border-ink-800" data-pagefind-ignore>
         <h3 class="text-sm font-ui font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400 mb-3">
           Related Terms
         </h3>

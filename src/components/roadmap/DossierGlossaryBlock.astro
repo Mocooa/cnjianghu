@@ -1,0 +1,166 @@
+---
+import { splitPublishedGlossaryEntriesByKind } from '../../data/glossary-dossier.mjs';
+
+interface PublishedGlossaryEntry {
+  slug: string;
+  title: string;
+  chinese: string;
+  pinyin: string;
+  kind: 'term' | 'concept-note';
+}
+
+interface PlannedGlossaryConcept {
+  term: string;
+  slug: string;
+  launchFirst: boolean;
+  evergreen: boolean;
+  titleCount: number;
+}
+
+interface Props {
+  publishedEntries?: PublishedGlossaryEntry[];
+  plannedConcepts?: PlannedGlossaryConcept[];
+  prominent?: boolean;
+}
+
+const {
+  publishedEntries = [],
+  plannedConcepts = [],
+  prominent = false,
+} = Astro.props;
+
+const hasPublished = publishedEntries.length > 0;
+const hasPlanned = plannedConcepts.length > 0;
+const publishedGroups = splitPublishedGlossaryEntriesByKind(publishedEntries);
+---
+
+{(hasPublished || hasPlanned) && (
+  <section class:list={[
+    'space-y-0',
+    prominent
+      ? 'rounded-2xl border border-vermilion/15 bg-vermilion/5 p-4 dark:border-vermilion/20 dark:bg-vermilion/10'
+      : 'mt-5 border-t border-ink-100 pt-4 dark:border-ink-800',
+  ]}>
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h4 class="text-sm font-ui font-semibold uppercase tracking-[0.14em] text-ink-600 dark:text-ink-300">
+          Glossary Entry Points
+        </h4>
+        <p class="mt-1 text-xs font-ui text-ink-500 dark:text-ink-400">
+          Terms and concept notes attached to this dossier.
+        </p>
+      </div>
+
+      <span class="text-xs font-ui text-ink-400 dark:text-ink-500">
+        {publishedEntries.length} live · {plannedConcepts.length} planned
+      </span>
+    </div>
+
+    <div class="space-y-4">
+      {hasPublished && (
+        <section class="space-y-2">
+          <div class="text-[11px] font-ui uppercase tracking-[0.12em] text-ink-400 dark:text-ink-500">
+            Published glossary
+          </div>
+          <div class="space-y-3">
+            {publishedGroups.terms.length > 0 && (
+              <section class="space-y-2">
+                <div class="text-[11px] font-ui uppercase tracking-[0.12em] text-ink-400 dark:text-ink-500">
+                  Terms
+                </div>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {publishedGroups.terms.map((entry) => (
+                    <a
+                      href={`/glossary/${entry.slug}`}
+                      class="rounded-xl border border-ink-100 bg-white px-3 py-3 transition-colors hover:border-vermilion dark:border-ink-800 dark:bg-ink-950/60"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <div class="text-base font-chinese font-semibold text-ink-900 dark:text-ink-50">
+                            {entry.chinese}
+                          </div>
+                          <div class="text-[11px] italic text-ink-400 dark:text-ink-500">
+                            {entry.pinyin}
+                          </div>
+                        </div>
+                        <span class="shrink-0 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-ui uppercase tracking-[0.12em] text-ink-500 dark:bg-ink-900 dark:text-ink-400">
+                          Term
+                        </span>
+                      </div>
+                      <div class="mt-2 text-xs font-ui text-ink-600 dark:text-ink-300">
+                        {entry.title}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {publishedGroups.conceptNotes.length > 0 && (
+              <section class="space-y-2">
+                <div class="text-[11px] font-ui uppercase tracking-[0.12em] text-ink-400 dark:text-ink-500">
+                  Concept notes
+                </div>
+                <div class="grid grid-cols-1 gap-2">
+                  {publishedGroups.conceptNotes.map((entry) => (
+                    <a
+                      href={`/glossary/${entry.slug}`}
+                      class="rounded-xl border border-vermilion/20 bg-vermilion/5 px-3 py-3 transition-colors hover:border-vermilion dark:border-vermilion/30 dark:bg-vermilion/10"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <div class="text-base font-chinese font-semibold text-ink-900 dark:text-ink-50">
+                            {entry.chinese}
+                          </div>
+                          <div class="text-[11px] italic text-ink-400 dark:text-ink-500">
+                            {entry.pinyin}
+                          </div>
+                        </div>
+                        <span class="shrink-0 rounded-full bg-vermilion/10 px-2 py-0.5 text-[10px] font-ui uppercase tracking-[0.12em] text-vermilion">
+                          Concept note
+                        </span>
+                      </div>
+                      <div class="mt-2 text-xs font-ui text-ink-600 dark:text-ink-300">
+                        {entry.title}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        </section>
+      )}
+
+      {hasPlanned && (
+        <section class="space-y-2">
+          <div class="text-[11px] font-ui uppercase tracking-[0.12em] text-ink-400 dark:text-ink-500">
+            Planned glossary concepts
+          </div>
+          <div class="flex flex-wrap gap-2">
+            {plannedConcepts.map((concept) => (
+              <div class="rounded-xl border border-dashed border-ink-200 bg-ink-50/80 px-3 py-2 dark:border-ink-700 dark:bg-ink-950/60">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-sm font-ui font-medium text-ink-800 dark:text-ink-100">
+                    {concept.term}
+                  </span>
+                  <span class="rounded-full bg-white px-2 py-0.5 text-[10px] font-ui uppercase tracking-[0.12em] text-ink-500 dark:bg-ink-900 dark:text-ink-400">
+                    Planned
+                  </span>
+                  {concept.launchFirst && (
+                    <span class="rounded-full bg-vermilion/10 px-2 py-0.5 text-[10px] font-ui uppercase tracking-[0.12em] text-vermilion">
+                      Launch first
+                    </span>
+                  )}
+                </div>
+                <div class="mt-1 text-[11px] font-ui text-ink-500 dark:text-ink-400">
+                  {concept.titleCount} supporting title{concept.titleCount === 1 ? '' : 's'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </section>
+)}

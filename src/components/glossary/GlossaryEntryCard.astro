@@ -1,0 +1,90 @@
+---
+import {
+  entryIsConceptNote,
+  formatEvidenceType,
+  getGlossaryContext,
+} from '../../data/glossary-index.mjs';
+
+const { entry, compact = false } = Astro.props;
+const isConceptNote = entryIsConceptNote(entry);
+const context = getGlossaryContext(entry);
+const evidenceLabel = formatEvidenceType(entry.data.evidence_type);
+---
+
+<a
+  href={`/glossary/${entry.id}`}
+  class:list={[
+    'group block rounded-xl border border-ink-200 bg-white transition-all hover:shadow-lg hover:border-ink-300 dark:border-ink-800 dark:bg-ink-900 dark:hover:border-ink-700',
+    compact ? 'p-4' : 'p-5',
+  ]}
+>
+  <div class:list={['flex items-start justify-between gap-3', compact ? 'mb-1.5' : 'mb-2']}>
+    <div class="min-w-0">
+      <div class="mb-1 flex flex-wrap items-baseline gap-2">
+        <span class:list={[
+          'font-chinese font-semibold text-ink-900 transition-colors group-hover:text-vermilion dark:text-ink-50',
+          compact ? 'text-xl' : 'text-2xl',
+        ]}>
+          {entry.data.chinese}
+        </span>
+        <span class="text-sm text-ink-400 italic">{entry.data.pinyin}</span>
+        <span class="text-sm font-ui text-ink-600 dark:text-ink-300">{entry.data.title}</span>
+      </div>
+      <div class="text-xs font-ui text-ink-400 dark:text-ink-500">
+        "{entry.data.literal}"
+      </div>
+    </div>
+
+    <span class:list={[
+      'shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-ui',
+      isConceptNote
+        ? 'bg-vermilion/10 text-vermilion'
+        : 'bg-ink-100 dark:bg-ink-800 text-ink-500 dark:text-ink-400',
+    ]}>
+      {isConceptNote ? 'Concept note' : 'Term'}
+    </span>
+  </div>
+
+  <p class="text-sm text-ink-600 dark:text-ink-400 line-clamp-3">
+    {entry.data.short_definition}
+  </p>
+
+  <div class:list={[compact ? 'mt-3 space-y-2.5' : 'mt-4 space-y-3']}>
+    <div class="flex flex-wrap gap-2">
+      <span class="inline-flex items-center px-2 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-600 dark:text-ink-300">
+        {context.pillar.name}
+      </span>
+      <span class="inline-flex items-center px-2 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-500 dark:text-ink-400">
+        {evidenceLabel}
+      </span>
+      <span class="inline-flex items-center px-2 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-500 dark:text-ink-400 capitalize">
+        {entry.data.category}
+      </span>
+    </div>
+
+    <div class:list={[
+      compact
+        ? 'text-sm font-ui text-ink-600 dark:text-ink-300'
+        : 'rounded-lg bg-ink-50 px-3 py-2 dark:bg-ink-950/60',
+    ]}>
+      {!compact && (
+        <div class="text-[11px] font-ui uppercase tracking-[0.14em] text-ink-400 dark:text-ink-500">
+          Dossier
+        </div>
+      )}
+      <div class:list={[compact ? '' : 'mt-1 text-sm font-ui text-ink-700 dark:text-ink-300']}>
+        {context.dossier}
+      </div>
+    </div>
+
+    {!compact && entry.data.tags && entry.data.tags.length > 0 && (
+      <div class="flex flex-wrap gap-2">
+        {entry.data.tags.slice(0, 3).map((tag) => (
+          <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-ui rounded-full bg-white dark:bg-ink-950 text-ink-500 dark:text-ink-400">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+</a>

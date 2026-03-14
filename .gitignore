@@ -22,3 +22,11 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+.vercel
+
+# work session logs (not project docs)
+findings.md
+progress.md
+task_plan.md
+2026-03-12-cnjianghu-pillars-architecture.md
+2026-03-12-pillars-map-visual-philosophy.md
