@@ -2,8 +2,10 @@ import type { APIRoute } from 'astro';
 import {
   getDeepDiveUrl,
   getGlossaryUrl,
+  getQuickBiteUrl,
   getPublishedDeepDives,
   getPublishedGlossary,
+  getPublishedQuickBites,
   SITE_URL,
   toAbsoluteUrl,
 } from '../utils/content';
@@ -36,9 +38,10 @@ function buildSitemapXml(items: SitemapItem[]): string {
 }
 
 export const GET: APIRoute = async ({ site = new URL(SITE_URL) }) => {
-  const [deepDives, glossaryEntries] = await Promise.all([
+  const [deepDives, glossaryEntries, quickBites] = await Promise.all([
     getPublishedDeepDives(),
     getPublishedGlossary(),
+    getPublishedQuickBites(),
   ]);
 
   const staticPages = [
@@ -64,6 +67,10 @@ export const GET: APIRoute = async ({ site = new URL(SITE_URL) }) => {
     })),
     ...glossaryEntries.map((entry) => ({
       url: toAbsoluteUrl(getGlossaryUrl(entry.id), site),
+    })),
+    ...quickBites.map((entry) => ({
+      url: toAbsoluteUrl(getQuickBiteUrl(entry.id), site),
+      lastmod: entry.data.date.toISOString(),
     })),
   ];
 
