@@ -62,7 +62,7 @@ export function getDeepDiveUrl(slug: string): string {
 }
 
 export function getQuickBiteUrl(slug: string): string {
-  return `/today#${slug}`;
+  return `/quick-bites/${slug}`;
 }
 
 export function getGlossaryUrl(slug: string): string {

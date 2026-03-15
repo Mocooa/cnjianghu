@@ -31,7 +31,7 @@ const quickBiteDateFormatter = new Intl.DateTimeFormat('en-US', {
 function HomeCard({ bite }: { bite: QuickBiteItem }) {
   return (
     <a
-      href={`/today#${bite.id}`}
+      href={`/quick-bites/${bite.id}`}
       className="group block rounded-xl border border-ink-200 bg-white p-4 transition-all hover:border-vermilion/40 hover:shadow-lg dark:border-ink-800 dark:bg-ink-900"
     >
       <div className="flex items-center justify-between gap-3">
@@ -61,7 +61,10 @@ function HomeCard({ bite }: { bite: QuickBiteItem }) {
 
 function TodayCard({ bite }: { bite: QuickBiteItem }) {
   return (
-    <article className="rounded-xl border border-ink-200 bg-white p-6 dark:border-ink-800 dark:bg-ink-900">
+    <a
+      href={`/quick-bites/${bite.id}`}
+      className="group block rounded-xl border border-ink-200 bg-white p-6 transition-all hover:border-vermilion/40 hover:shadow-lg dark:border-ink-800 dark:bg-ink-900"
+    >
       <div className="mb-3 flex items-center gap-3">
         <span
           className="text-xs font-ui font-semibold uppercase tracking-wider"
@@ -85,14 +88,14 @@ function TodayCard({ bite }: { bite: QuickBiteItem }) {
         </div>
       ) : null}
 
-      <h2 id={bite.id} className="scroll-mt-24 mb-2 text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
+      <h2 className="mb-2 text-xl font-heading font-semibold text-ink-900 transition-colors group-hover:text-vermilion dark:text-ink-50">
         {bite.title}
       </h2>
 
       <p className="leading-relaxed text-ink-600 dark:text-ink-400">
         {bite.summary}
       </p>
-    </article>
+    </a>
   );
 }
 

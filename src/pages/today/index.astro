@@ -75,8 +75,9 @@ const typeColors: Record<string, string> = {
 
           <div class="space-y-6">
             {sorted.map(bite => (
-              <article
-                class="p-6 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900"
+              <a
+                href={`/quick-bites/${bite.id}`}
+                class="group block p-6 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 transition-all hover:border-vermilion/40 hover:shadow-lg"
               >
                 <div class="flex items-center gap-3 mb-3">
                   <span
@@ -101,14 +102,14 @@ const typeColors: Record<string, string> = {
                   </div>
                 )}
 
-                <h3 id={bite.id} class="scroll-mt-24 text-xl font-heading font-semibold text-ink-900 dark:text-ink-50 mb-2">
+                <h3 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50 mb-2 transition-colors group-hover:text-vermilion">
                   {bite.data.title}
                 </h3>
 
                 <p class="text-ink-600 dark:text-ink-400 leading-relaxed">
                   {bite.data.summary}
                 </p>
-              </article>
+              </a>
             ))}
           </div>
         </section>

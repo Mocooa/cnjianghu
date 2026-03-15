@@ -1,0 +1,119 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPillar } from '../../utils/pillars';
+
+const typeLabels: Record<string, string> = {
+  'word-of-the-day': 'Word of the Day',
+  'visual-china': 'Visual China',
+  'trending': 'Trending Now',
+  'did-you-know': 'Did You Know',
+};
+
+const typeColors: Record<string, string> = {
+  'word-of-the-day': 'vermilion',
+  'visual-china': 'gold',
+  'trending': 'azure',
+  'did-you-know': 'jade',
+};
+
+export async function getStaticPaths() {
+  const bites = await getCollection('quick-bites');
+  return bites.map(bite => ({
+    params: { slug: bite.id },
+    props: { bite },
+  }));
+}
+
+const { bite } = Astro.props;
+const { Content } = await render(bite);
+const pillarData = getPillar(bite.data.pillar);
+const formattedDate = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+}).format(bite.data.date);
+---
+
+<BaseLayout title={bite.data.title} description={bite.data.summary} ogType="article" searchIndex={true}>
+  <article class="animate-fade-in">
+    <header class="container-article pt-10 pb-8">
+      {/* Breadcrumb */}
+      <nav class="flex items-center gap-2 text-sm font-ui text-ink-400 dark:text-ink-500 mb-6" data-pagefind-ignore>
+        <a href="/" class="hover:text-vermilion transition-colors">Home</a>
+        <span>/</span>
+        <a href="/today" class="hover:text-vermilion transition-colors">Quick Bites</a>
+        {pillarData && (
+          <>
+            <span>/</span>
+            <a
+              href={`/explore/${bite.data.pillar}`}
+              class="hover:text-vermilion transition-colors"
+              style={`color: var(--color-${pillarData.color})`}
+            >
+              {pillarData.name}
+            </a>
+          </>
+        )}
+      </nav>
+
+      {/* Type badge */}
+      <span
+        class="inline-block text-xs font-ui font-semibold uppercase tracking-wider mb-3"
+        style={`color: var(--color-${typeColors[bite.data.type] ?? 'vermilion'})`}
+      >
+        {typeLabels[bite.data.type] ?? bite.data.type}
+      </span>
+
+      {/* Chinese term */}
+      {bite.data.chinese_term && (
+        <div class="mb-3">
+          <span class="text-4xl font-chinese font-semibold text-ink-900 dark:text-ink-50">
+            {bite.data.chinese_term}
+          </span>
+          {bite.data.pinyin && (
+            <span class="ml-3 text-lg text-ink-400 italic">{bite.data.pinyin}</span>
+          )}
+        </div>
+      )}
+
+      <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 leading-tight">
+        {bite.data.title}
+      </h1>
+
+      <div class="mt-4 flex flex-wrap items-center gap-4 text-sm font-ui text-ink-500 dark:text-ink-400">
+        <time datetime={bite.data.date.toISOString()}>{formattedDate}</time>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <span>{bite.data.reading_time} min read</span>
+      </div>
+
+      {/* Tags */}
+      {bite.data.tags.length > 0 && (
+        <div class="mt-4 flex flex-wrap gap-2">
+          {bite.data.tags.map(tag => (
+            <span class="px-2.5 py-0.5 text-xs font-ui font-medium rounded-full bg-ink-100 dark:bg-ink-800 text-ink-600 dark:text-ink-400">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    {/* Body */}
+    <div class="container-article prose dark:prose-invert">
+      <Content />
+    </div>
+
+    {/* Back link */}
+    <div class="container-article mt-12 pt-8 border-t border-ink-200 dark:border-ink-800" data-pagefind-ignore>
+      <a href="/today" class="inline-flex items-center gap-2 text-sm font-ui text-vermilion hover:underline">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5" />
+          <path d="m12 19-7-7 7-7" />
+        </svg>
+        All Quick Bites
+      </a>
+    </div>
+  </article>
+</BaseLayout>
