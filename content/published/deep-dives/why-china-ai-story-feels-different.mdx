@@ -1,6 +1,6 @@
 ---
-title: "Why China's AI Story Feels Different from Silicon Valley's Story"
-subtitle: "Same technology, different logic — constrained compute, open-source strategy, and a race that looks nothing like the Western version"
+title: "What Happens When You Build AI Without Enough GPUs"
+subtitle: "DeepSeek shook Silicon Valley not by outspending it, but by proving that constraints can be a strategy"
 pillar: future-china
 tags: [AI, tech, innovation, deepseek, open-source]
 date: 2026-03-15
@@ -8,6 +8,15 @@ author: cnjianghu
 summary: "DeepSeek shook Silicon Valley by matching frontier AI performance at a fraction of the cost. But the real story is not one lab — it is an entire ecosystem building differently under different constraints."
 reading_time: 7
 sources:
+  - title: "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning"
+    url: "https://arxiv.org/abs/2501.12948"
+    platform: arXiv
+  - title: "Nvidia sheds almost $600 billion in market cap, biggest drop ever"
+    url: "https://www.cnbc.com/2025/01/27/nvidia-sheds-almost-600-billion-in-market-cap-biggest-drop-ever.html"
+    platform: CNBC
+  - title: "Where the Chips Fall: U.S. Export Controls Under the Biden Administration"
+    url: "https://www.csis.org/analysis/where-chips-fall-us-export-controls-under-biden-administration-2022-2024"
+    platform: CSIS
   - title: "DeepSeek如何改变了AI竞争格局"
     url: "https://www.zhihu.com/question/641597362"
     platform: Zhihu
@@ -16,7 +25,7 @@ sources:
 import ChineseTerm from '@components/content/ChineseTerm.astro';
 import CulturalNote from '@components/content/CulturalNote.astro';
 
-January 2025. A Chinese AI lab called DeepSeek releases a reasoning model that matches OpenAI's best. Nvidia loses $600 billion in market value in a single day. Silicon Valley's assumption — that AI leadership requires unlimited compute and unlimited budgets — cracks.
+January 2025. A Chinese AI lab called DeepSeek releases a reasoning model that matches OpenAI's best. Nvidia lost $589 billion in market value in a single day — the largest single-day loss in U.S. stock market history (CNBC, January 27, 2025). Silicon Valley's assumption — that AI leadership requires unlimited compute and unlimited budgets — cracks.
 
 What happened was not an upset. It was a different approach arriving at the same destination through a completely different route.
 
@@ -24,7 +33,7 @@ What happened was not an upset. It was a different approach arriving at the same
 
 The Silicon Valley AI narrative is built on scale: more data, more compute, more GPUs, more money. The logic is straightforward — bigger models trained on more hardware produce better results. OpenAI, Google, and Anthropic compete in a capital-intensive arms race where the price of entry is billions of dollars and thousands of cutting-edge chips.
 
-The Chinese AI narrative is built on constraint. US chip export restrictions mean Chinese labs cannot buy the latest Nvidia hardware. Budgets are significant but smaller than Big Tech rivals. So Chinese labs optimize differently — finding architectural innovations that reduce compute requirements, training models more efficiently, and publishing their work openly.
+The Chinese AI narrative is built on constraint. US chip export restrictions mean Chinese labs cannot buy the latest Nvidia hardware. The restrictions, first imposed in October 2022 and tightened in October 2023, progressively blocked China's access to A100, H100, A800, and H800 chips (CSIS, 2024). Budgets are significant but smaller than Big Tech rivals. So Chinese labs optimize differently — finding architectural innovations that reduce compute requirements, training models more efficiently, and publishing their work openly.
 
 The result is not a cheap imitation. It is a genuine alternative: <ChineseTerm chinese="大模型" pinyin="dà mó xíng" definition="Large model — the Chinese term for large language models and foundation models in AI" glossarySlug="large-model" /> development that achieves frontier performance through efficiency rather than brute force.
 
@@ -44,7 +53,7 @@ DeepSeek's origin is unusual even by Chinese tech standards. It was founded not 
 
 Perhaps the most surprising difference: Chinese AI labs are publishing their model weights openly, while Western frontier labs increasingly lock theirs down.
 
-DeepSeek's models are <ChineseTerm chinese="开源模型" pinyin="kāi yuán mó xíng" definition="Open-source model — AI models whose weights and architecture are publicly available for use and modification" glossarySlug="open-source-model" />. Alibaba's Qwen models are open-source. Baichuan, Yi, and others publish weights. The Chinese AI ecosystem is, in many ways, more open than its Western counterpart.
+DeepSeek-R1, released in January 2025, matched OpenAI's o1 on reasoning benchmarks while using a fraction of the compute (arXiv: 2501.12948). DeepSeek's models are <ChineseTerm chinese="开源模型" pinyin="kāi yuán mó xíng" definition="Open-source model — AI models whose weights and architecture are publicly available for use and modification" glossarySlug="open-source-model" />. Alibaba's Qwen models are open-source. Baichuan, Yi, and others publish weights. The Chinese AI ecosystem is, in many ways, more open than its Western counterpart.
 
 Why? Several reasons converge. Open-source builds ecosystem adoption — developers worldwide build on your model, which makes your platform the standard. It attracts talent — researchers want to work on models people can actually use. And for Chinese labs facing geopolitical headwinds, open-source creates goodwill and makes it harder for governments to restrict their technology.
 
@@ -67,7 +76,7 @@ The variety matters. Chinese AI is not waiting for a single winner. It is deploy
 In China, AI discourse is infrastructure talk, not sci-fi talk. The dominant question is not "Will AI become sentient?" but "How do we deploy this into hospitals, schools, and factories?" This pragmatic framing — AI as tool, not threat — shapes both public opinion and government policy. It is one reason Chinese AI adoption in daily applications may move faster than in the West, where existential risk debates slow institutional adoption.
 </CulturalNote>
 
-## What this means
+## A different race entirely
 
 China's AI story is not about catching up. It is about building differently — under different constraints, with different strategies, toward different deployment goals.
 
@@ -78,3 +87,8 @@ And the gap between the two approaches is where the most interesting questions a
 ---
 
 *Related: [大模型 (Large Model)](/glossary/large-model) · [开源模型 (Open-Source Model)](/glossary/open-source-model)*
+
+**Sources:**
+1. DeepSeek-R1 Technical Report — [arXiv](https://arxiv.org/abs/2501.12948)
+2. "Nvidia sheds almost $600 billion in market cap" — [CNBC](https://www.cnbc.com/2025/01/27/nvidia-sheds-almost-600-billion-in-market-cap-biggest-drop-ever.html)
+3. "Where the Chips Fall: U.S. Export Controls" — [CSIS](https://www.csis.org/analysis/where-chips-fall-us-export-controls-under-biden-administration-2022-2024)
