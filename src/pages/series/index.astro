@@ -1,5 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPublishedDeepDives } from '../../utils/content';
+import { getPillar } from '../../utils/pillars';
+import { seriesList } from '../../data/series';
+
+const allArticles = await getPublishedDeepDives();
+
+const seriesWithCounts = seriesList.map((s) => {
+  const articles = allArticles
+    .filter((a) => a.data.series?.slug === s.slug)
+    .sort((a, b) => (a.data.series?.part ?? 0) - (b.data.series?.part ?? 0));
+  const pillarData = getPillar(s.pillar);
+  return { ...s, articles, pillarData };
+});
 ---
 
 <BaseLayout title="Series" description="Multi-part deep dives into Chinese culture topics.">
@@ -11,11 +24,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       Multi-part journeys into the deep end of Chinese culture. Each series takes you from curious to informed.
     </p>
 
-    <div class="text-center py-16">
-      <div class="text-5xl mb-4">📚</div>
-      <p class="text-ink-400 dark:text-ink-500">
-        Our first series is in the works. Stay tuned.
-      </p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {seriesWithCounts.map((s) => (
+        <a
+          href={`/series/${s.slug}`}
+          class="group block p-6 rounded-xl border border-ink-200 dark:border-ink-800 hover:border-vermilion dark:hover:border-vermilion transition-colors"
+        >
+          {s.pillarData && (
+            <span
+              class="inline-block text-xs font-ui font-semibold uppercase tracking-wider mb-2"
+              style={`color: var(--color-${s.pillarData.color})`}
+            >
+              {s.pillarData.icon} {s.pillarData.name}
+            </span>
+          )}
+          <h2 class="text-xl font-heading font-bold text-ink-900 dark:text-ink-50 group-hover:text-vermilion transition-colors mb-2">
+            {s.name}
+          </h2>
+          <p class="text-sm text-ink-500 dark:text-ink-400 mb-4 line-clamp-2">
+            {s.description}
+          </p>
+          <div class="flex items-center gap-2 text-xs font-ui text-ink-400 dark:text-ink-500">
+            <span>{s.articles.length} articles</span>
+            <span>·</span>
+            <span>{s.articles.reduce((sum, a) => sum + (a.data.reading_time ?? 0), 0)} min total</span>
+          </div>
+        </a>
+      ))}
     </div>
   </div>
 </BaseLayout>

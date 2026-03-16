@@ -93,6 +93,13 @@ export function getEntryContentHtml(entry: FeedEntry): string {
   return `<p>${escapeHtml(entry.data.summary)}</p>`;
 }
 
+export async function getSeriesArticles(seriesSlug: string): Promise<DeepDiveEntry[]> {
+  const all = await getPublishedDeepDives();
+  return all
+    .filter((e) => e.data.series?.slug === seriesSlug)
+    .sort((a, b) => (a.data.series?.part ?? 0) - (b.data.series?.part ?? 0));
+}
+
 export function toAbsoluteUrl(pathname: string, site: URL | string = SITE_URL): string {
   return new URL(pathname, site).toString();
 }

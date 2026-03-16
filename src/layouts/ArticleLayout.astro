@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import { getPillar } from '../utils/pillars';
 import ShareActions from '../components/content/ShareActions.astro';
+import { getSeriesArticles, getDeepDiveUrl } from '../utils/content';
 
 interface Props {
   title: string;
@@ -39,6 +40,17 @@ const {
 } = Astro.props;
 
 const pillarData = getPillar(pillar);
+
+// Resolve series prev/next URLs
+let seriesPrev: { url: string; title: string } | null = null;
+let seriesNext: { url: string; title: string } | null = null;
+if (series) {
+  const seriesArticles = await getSeriesArticles(series.slug);
+  const prevArticle = seriesArticles.find((a) => a.data.series?.part === series.part - 1);
+  const nextArticle = seriesArticles.find((a) => a.data.series?.part === series.part + 1);
+  if (prevArticle) seriesPrev = { url: getDeepDiveUrl(prevArticle.id), title: prevArticle.data.title };
+  if (nextArticle) seriesNext = { url: getDeepDiveUrl(nextArticle.id), title: nextArticle.data.title };
+}
 const formattedDate = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
   month: 'long',
@@ -198,15 +210,19 @@ const articleSchema = {
 
     {/* Series navigation */}
     {series && (
-      <nav class="container-article mt-8 py-6 border-t border-ink-200 dark:border-ink-800 flex justify-between font-ui text-sm" data-pagefind-ignore>
-        {series.part > 1 ? (
-          <a href="#" class="text-vermilion hover:underline">← Previous</a>
+      <nav class="container-article mt-8 py-6 border-t border-ink-200 dark:border-ink-800 flex justify-between items-start font-ui text-sm" data-pagefind-ignore>
+        {seriesPrev ? (
+          <a href={seriesPrev.url} class="text-vermilion hover:underline max-w-[35%]">
+            ← {seriesPrev.title}
+          </a>
         ) : <span />}
-        <a href={`/series/${series.slug}`} class="text-ink-500 hover:text-vermilion">
-          Series Overview ({series.part}/{series.total})
+        <a href={`/series/${series.slug}`} class="text-ink-500 hover:text-vermilion shrink-0">
+          {series.part}/{series.total}
         </a>
-        {series.part < series.total ? (
-          <a href="#" class="text-vermilion hover:underline">Next →</a>
+        {seriesNext ? (
+          <a href={seriesNext.url} class="text-vermilion hover:underline text-right max-w-[35%]">
+            {seriesNext.title} →
+          </a>
         ) : <span />}
       </nav>
     )}
