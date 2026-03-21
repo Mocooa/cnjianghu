@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getPublishedDeepDives } from '../../utils/content';
+import { getPublishedDeepDives, getPublishedQuickBites } from '../../utils/content';
 import { renderArticleOgImage, renderSiteOgImage } from '../../utils/og';
 
 type SiteOgProps = {
@@ -13,10 +13,21 @@ type ArticleOgProps = {
   subtitle?: string;
   pillar: string;
   date: string;
+  contentType?: string;
+};
+
+const quickBiteTypeLabels: Record<string, string> = {
+  'word-of-the-day': 'Word of the Day',
+  'visual-china': 'Visual China',
+  'trending': 'Trending Now',
+  'did-you-know': 'Did You Know',
 };
 
 export async function getStaticPaths() {
-  const articles = await getPublishedDeepDives();
+  const [articles, quickBites] = await Promise.all([
+    getPublishedDeepDives(),
+    getPublishedQuickBites(),
+  ]);
 
   return [
     {
@@ -34,6 +45,19 @@ export async function getStaticPaths() {
         date: article.data.date.toISOString(),
       },
     })),
+    ...quickBites.map((bite) => ({
+      params: { slug: `quick-bites/${bite.id}` },
+      props: {
+        kind: 'article' satisfies ArticleOgProps['kind'],
+        title: bite.data.chinese_term
+          ? `${bite.data.chinese_term} — ${bite.data.title}`
+          : bite.data.title,
+        summary: bite.data.summary,
+        pillar: bite.data.pillar,
+        date: bite.data.date.toISOString(),
+        contentType: quickBiteTypeLabels[bite.data.type] ?? 'Quick Bite',
+      },
+    })),
   ];
 }
 
@@ -47,6 +71,7 @@ export const GET: APIRoute = async ({ props }) => {
           subtitle: props.subtitle,
           pillar: props.pillar,
           date: props.date,
+          contentType: props.contentType,
         });
 
   return new Response(png, {

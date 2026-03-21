@@ -14,6 +14,7 @@ type ArticleOgOptions = {
   pillar: string;
   subtitle?: string;
   date?: string;
+  contentType?: string;
 };
 
 function escapeXml(value: string): string {
@@ -195,7 +196,7 @@ export function renderArticleOgImage(options: ArticleOgOptions): Buffer {
   const svg = baseSvg(`
     <rect x="918" y="64" width="218" height="42" rx="21" fill="${pillar.color}" fill-opacity="0.14" />
     <text x="944" y="90" font-family="'Source Serif 4 Variable'" font-size="18" fill="${pillar.color}">${escapeXml(pillar.name)}</text>
-    <text x="86" y="168" font-family="'Source Serif 4 Variable'" font-size="24" fill="#c73e1d">Deep Dive</text>
+    <text x="86" y="168" font-family="'Source Serif 4 Variable'" font-size="24" fill="#c73e1d">${escapeXml(options.contentType ?? 'Deep Dive')}</text>
     ${renderTitleLines(titleLines, 252)}
     ${renderBodyLines(bodyLines, 462)}
     <line x1="86" y1="536" x2="1114" y2="536" stroke="rgba(26,26,46,0.12)" />

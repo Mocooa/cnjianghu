@@ -36,7 +36,7 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
 }).format(bite.data.date);
 ---
 
-<BaseLayout title={bite.data.title} description={bite.data.summary} ogType="article" searchIndex={true}>
+<BaseLayout title={bite.data.title} description={bite.data.summary} ogType="article" ogImage={`/og/quick-bites/${bite.id}.png`} searchIndex={true}>
   <article class="animate-fade-in">
     <header class="container-article pt-10 pb-8">
       {/* Breadcrumb */}
