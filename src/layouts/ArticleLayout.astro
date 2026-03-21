@@ -2,7 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import { getPillar } from '../utils/pillars';
 import ShareActions from '../components/content/ShareActions.astro';
-import { getSeriesArticles, getDeepDiveUrl } from '../utils/content';
+import { getSeriesArticles, getDeepDiveUrl, getPublishedDeepDives } from '../utils/content';
 
 interface Props {
   title: string;
@@ -22,6 +22,7 @@ interface Props {
     part: number;
     total: number;
   };
+  related?: string[];
 }
 
 const {
@@ -37,6 +38,7 @@ const {
   tags = [],
   sources = [],
   series,
+  related = [],
 } = Astro.props;
 
 const pillarData = getPillar(pillar);
@@ -51,6 +53,23 @@ if (series) {
   if (prevArticle) seriesPrev = { url: getDeepDiveUrl(prevArticle.id), title: prevArticle.data.title };
   if (nextArticle) seriesNext = { url: getDeepDiveUrl(nextArticle.id), title: nextArticle.data.title };
 }
+// Resolve related article slugs to entries
+const relatedArticles: Array<{ url: string; title: string; subtitle?: string; pillar: string }> = [];
+if (related.length > 0) {
+  const allArticles = await getPublishedDeepDives();
+  for (const slug of related) {
+    const match = allArticles.find((a) => a.id === slug);
+    if (match) {
+      relatedArticles.push({
+        url: getDeepDiveUrl(match.id),
+        title: match.data.title,
+        subtitle: match.data.subtitle,
+        pillar: match.data.pillar,
+      });
+    }
+  }
+}
+
 const formattedDate = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
   month: 'long',
@@ -206,6 +225,43 @@ const articleSchema = {
           ))}
         </ul>
       </footer>
+    )}
+
+    {/* Related articles */}
+    {relatedArticles.length > 0 && (
+      <section class="container-article mt-10 pt-8 border-t border-ink-200 dark:border-ink-800" data-pagefind-ignore>
+        <h3 class="text-sm font-ui font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400 mb-4">
+          Keep Reading
+        </h3>
+        <div class="grid gap-4 sm:grid-cols-2">
+          {relatedArticles.map(ra => {
+            const raPillar = getPillar(ra.pillar);
+            return (
+              <a
+                href={ra.url}
+                class="group block p-4 rounded-lg border border-ink-200 dark:border-ink-800 hover:border-vermilion dark:hover:border-vermilion transition-colors"
+              >
+                {raPillar && (
+                  <span
+                    class="text-xs font-ui font-semibold uppercase tracking-wider"
+                    style={`color: var(--color-${raPillar.color})`}
+                  >
+                    {raPillar.icon} {raPillar.name}
+                  </span>
+                )}
+                <p class="mt-1 font-heading font-semibold text-ink-900 dark:text-ink-100 group-hover:text-vermilion transition-colors leading-snug">
+                  {ra.title}
+                </p>
+                {ra.subtitle && (
+                  <p class="mt-1 text-sm text-ink-500 dark:text-ink-400 line-clamp-2">
+                    {ra.subtitle}
+                  </p>
+                )}
+              </a>
+            );
+          })}
+        </div>
+      </section>
     )}
 
     {/* Series navigation */}
