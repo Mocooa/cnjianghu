@@ -55,7 +55,7 @@ test('sixteenth glossary batch exists as live slugs for home-life and family-dut
 
   for (const slug of [
     'qiuku',
-    'yexiao',
+    'late-night-snack',
     'xiao',
     'changyuan',
     'returning-home',
@@ -76,11 +76,11 @@ test('sixteenth glossary batch resolves home-life and family-duty labels into li
     kind: 'term',
   });
 
-  assert.deepEqual(resolveGlossaryDependency('Yexiao', lookup), {
-    label: 'Yexiao',
+  assert.deepEqual(resolveGlossaryDependency('Late-Night Snack', lookup), {
+    label: 'Late-Night Snack',
     isLinked: true,
-    href: '/glossary/yexiao',
-    title: 'Yexiao',
+    href: '/glossary/late-night-snack',
+    title: 'Late-Night Snack',
     chinese: '夜宵',
     kind: 'term',
   });
@@ -131,16 +131,16 @@ test('sixteenth glossary batch turns new bridge terms into inline links', () => 
   );
 
   assert.deepEqual(
-    tokenizeGlossaryLinkedTitle('Why `Yexiao` Is More Than "Late-Night Snack"', lookup),
+    tokenizeGlossaryLinkedTitle('Why `Late-Night Snack` Is More Than Just Food After Dark', lookup),
     [
       { type: 'text', value: 'Why ' },
       {
         type: 'link',
-        value: 'Yexiao',
-        href: '/glossary/yexiao',
+        value: 'Late-Night Snack',
+        href: '/glossary/late-night-snack',
         kind: 'term',
       },
-      { type: 'text', value: ' Is More Than "Late-Night Snack"' },
+      { type: 'text', value: ' Is More Than Just Food After Dark' },
     ],
   );
 
