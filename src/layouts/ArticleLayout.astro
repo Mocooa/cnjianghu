@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import { getPillar } from '../utils/pillars';
 import ShareActions from '../components/content/ShareActions.astro';
+import NewsletterSignup from '../components/layout/NewsletterSignup.astro';
 import { getSeriesArticles, getDeepDiveUrl, getPublishedDeepDives } from '../utils/content';
 
 interface Props {
@@ -263,6 +264,9 @@ const articleSchema = {
         </div>
       </section>
     )}
+
+    {/* Newsletter signup */}
+    <NewsletterSignup variant="inline" />
 
     {/* Series navigation */}
     {series && (

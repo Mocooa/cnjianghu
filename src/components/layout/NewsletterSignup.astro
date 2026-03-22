@@ -1,0 +1,68 @@
+---
+interface Props {
+  variant?: 'inline' | 'footer';
+}
+
+const { variant = 'inline' } = Astro.props;
+const username = import.meta.env.PUBLIC_BUTTONDOWN_USERNAME?.trim();
+const enabled = Boolean(username);
+const action = enabled ? `https://buttondown.email/api/emails/embed-subscribe/${username}` : '#';
+const isInline = variant === 'inline';
+---
+
+{enabled && (
+  <div
+    class:list={[
+      isInline
+        ? 'container-article mt-10 pt-8 border-t border-ink-200 dark:border-ink-800'
+        : 'mt-6',
+    ]}
+    data-pagefind-ignore
+  >
+    {isInline && (
+      <h3 class="text-sm font-ui font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400 mb-2">
+        Stay in the Loop
+      </h3>
+    )}
+
+    <p class:list={[
+      'text-sm text-ink-600 dark:text-ink-400 leading-relaxed',
+      isInline ? 'mb-4 max-w-lg' : 'mb-3',
+    ]}>
+      {isInline
+        ? 'New deep dives and cultural insights, delivered when they\'re ready. No spam, no fluff.'
+        : 'Get new stories delivered to your inbox.'}
+    </p>
+
+    <form
+      action={action}
+      method="post"
+      class="flex gap-2 max-w-md"
+    >
+      <input
+        type="email"
+        name="email"
+        required
+        placeholder="your@email.com"
+        class:list={[
+          'flex-1 px-3 py-2 text-sm font-ui rounded-lg border border-ink-300 dark:border-ink-700',
+          'bg-white dark:bg-ink-900 text-ink-900 dark:text-ink-100',
+          'placeholder:text-ink-400 dark:placeholder:text-ink-600',
+          'focus:outline-none focus:ring-2 focus:ring-vermilion/40 focus:border-vermilion',
+          'transition-colors',
+        ]}
+      />
+      <button
+        type="submit"
+        class:list={[
+          'px-4 py-2 text-sm font-ui font-medium rounded-lg',
+          'bg-vermilion text-white hover:bg-vermilion/90',
+          'focus:outline-none focus:ring-2 focus:ring-vermilion/40',
+          'transition-colors shrink-0',
+        ]}
+      >
+        Subscribe
+      </button>
+    </form>
+  </div>
+)}

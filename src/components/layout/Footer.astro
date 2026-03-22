@@ -1,4 +1,5 @@
 ---
+import NewsletterSignup from './NewsletterSignup.astro';
 const year = new Date().getFullYear();
 ---
 
@@ -28,7 +29,7 @@ const year = new Date().getFullYear();
         </ul>
       </div>
 
-      <!-- Links -->
+      <!-- Links + Newsletter -->
       <div class="font-ui">
         <h4 class="text-sm font-semibold text-ink-700 dark:text-ink-300 uppercase tracking-wider mb-3">Connect</h4>
         <ul class="space-y-2 text-sm">
@@ -36,6 +37,7 @@ const year = new Date().getFullYear();
           <li><a href="/rss.xml" class="text-ink-600 dark:text-ink-300 hover:text-vermilion transition-colors">RSS Feed</a></li>
           <li><a href="https://github.com/Mocooa/cnjianghu" target="_blank" rel="noopener" class="text-ink-600 dark:text-ink-300 hover:text-vermilion transition-colors">GitHub</a></li>
         </ul>
+        <NewsletterSignup variant="footer" />
       </div>
     </div>
 
