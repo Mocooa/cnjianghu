@@ -9,6 +9,8 @@ import {
   SITE_URL,
   toAbsoluteUrl,
 } from '../utils/content';
+import { seriesList } from '../data/series';
+import { buildStaticSitemapPaths } from '../data/sitemap.mjs';
 import { pillars } from '../utils/pillars';
 
 type SitemapItem = {
@@ -44,18 +46,10 @@ export const GET: APIRoute = async ({ site = new URL(SITE_URL) }) => {
     getPublishedQuickBites(),
   ]);
 
-  const staticPages = [
-    '/',
-    '/about',
-    '/explore',
-    '/glossary',
-    '/search',
-    '/series',
-    '/today',
-    '/rss.xml',
-    ...pillars.map((pillar) => `/explore/${pillar.slug}`),
-    ...pillars.map((pillar) => `/rss/${pillar.slug}.xml`),
-  ];
+  const staticPages = buildStaticSitemapPaths({
+    pillarSlugs: pillars.map((pillar) => pillar.slug),
+    seriesSlugs: seriesList.map((series) => series.slug),
+  });
 
   const items: SitemapItem[] = [
     ...staticPages.map((pathname) => ({
