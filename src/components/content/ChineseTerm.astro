@@ -20,7 +20,7 @@ const attrs = glossarySlug ? { href: `/glossary/${glossarySlug}` } : {};
   <span class="cn-pinyin">({pinyin})</span>
 
   {definition && (
-    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm font-ui bg-ink-900 dark:bg-ink-100 text-ink-50 dark:text-ink-900 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 max-w-xs text-center">
+    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm font-ui bg-ink-900 dark:bg-ink-100 text-ink-50 dark:text-ink-900 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-normal break-words z-10 max-w-xs text-center">
       {definition}
       <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-ink-900 dark:border-t-ink-100"></span>
     </span>
