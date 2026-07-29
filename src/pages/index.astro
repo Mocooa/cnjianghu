@@ -31,14 +31,14 @@ const initialTodayBites = selectDailyQuickBites(serializedQuickBites, {
       <div class="container-wide">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
-            Today's Quick Bites
+            Quick Bites Rotation
           </h2>
           <a href="/today" class="text-sm font-ui text-vermilion-dark dark:text-vermilion-light hover:text-vermilion hover:underline">
             View all →
           </a>
         </div>
         <p class="mb-4 text-sm font-ui text-ink-500 dark:text-ink-400">
-          Rotates daily on Shanghai time. If a type is missing, the remaining slots fall back to the newest available bites.
+          A rotating shelf from the published archive. Cards change daily on Shanghai time; the date on each card is its original publication date.
         </p>
         <TodayQuickBiteRotator
           client:load
@@ -94,7 +94,7 @@ const initialTodayBites = selectDailyQuickBites(serializedQuickBites, {
           Content coming soon
         </h2>
         <p class="text-ink-500 dark:text-ink-400 max-w-md mx-auto">
-          The jianghu is being built. Check back soon for deep dives into Chinese culture, daily quick bites, and more.
+          The jianghu is being built. Check back soon for deep dives into Chinese culture, quick bites, and more.
         </p>
       </div>
     </section>

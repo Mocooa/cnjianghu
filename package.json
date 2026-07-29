@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "test": "node --test tests/*.test.mjs",
+    "audit:content": "node scripts/audit-content.mjs",
     "build": "astro build",
     "postbuild": "pagefind --site dist",
     "preview": "astro preview",

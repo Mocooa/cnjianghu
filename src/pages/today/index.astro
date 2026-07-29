@@ -29,16 +29,16 @@ const typeColors: Record<string, string> = {
 ---
 
 <BaseLayout
-  title="Today"
-  description="Daily quick bites into Chinese culture — words, visuals, trends, and surprises."
+  title="Quick Bites"
+  description="Short entries into Chinese culture — words, visuals, trends, and surprising details."
   searchIndex={true}
 >
   <div class="container-wide py-12">
     <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 mb-2">
-      Today
+      Quick Bites
     </h1>
     <p class="text-ink-500 dark:text-ink-400 mb-10 max-w-2xl">
-      Quick cultural bites — a new word, a trending topic, a visual, or a surprising fact. Every day.
+      Short cultural entries — a useful word, a visual object, a live conversation, or a surprising fact.
     </p>
 
     {serializedBites.length > 0 ? (
@@ -46,14 +46,14 @@ const typeColors: Record<string, string> = {
         <section class="mb-12">
           <div class="mb-4 flex items-center justify-between gap-4">
             <h2 class="text-xl font-heading font-semibold text-ink-900 dark:text-ink-50">
-              Today's rotating selection
+              Today's archive rotation
             </h2>
             <span class="text-sm font-ui text-ink-500 dark:text-ink-400">
               Shanghai time
             </span>
           </div>
           <p class="mb-6 max-w-2xl text-sm font-ui text-ink-500 dark:text-ink-400">
-            Each day picks up to four bites. The selector tries to surface one from each quick-bite type first, then fills remaining slots from the newest available posts.
+            The cards rotate once a day from the published archive. Rotation does not mean a new post is published every day; each card keeps its original publication date.
           </p>
           <TodayQuickBiteRotator
             client:load
@@ -117,7 +117,7 @@ const typeColors: Record<string, string> = {
     ) : (
       <div class="text-center py-16">
         <div class="text-5xl mb-4">☀️</div>
-        <p class="text-ink-400 dark:text-ink-500">Today's bites are brewing. Check back soon.</p>
+        <p class="text-ink-400 dark:text-ink-500">Quick bites are being prepared. Check back soon.</p>
       </div>
     )}
   </div>

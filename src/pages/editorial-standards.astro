@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const principles = [
+  {
+    number: '01',
+    title: 'Sources are part of the story',
+    body: 'Deep dives use visible source lists and should rely on a mix of primary material, official data, scholarship, and reputable reporting appropriate to the claim. A link is not proof by itself; it must actually support the sentence built on it.',
+  },
+  {
+    number: '02',
+    title: 'Interpretation is labeled as interpretation',
+    body: 'Cultural explanation often requires judgment. cnjianghu distinguishes documented facts from analogy, synthesis, and editorial interpretation, and avoids presenting one regional or generational experience as universal.',
+  },
+  {
+    number: '03',
+    title: 'AI assists; it does not author reality',
+    body: 'AI tools may help organize research, compare drafts, translate working notes, check structure, and prepare production files. AI-generated text is not accepted as evidence. The project remains responsible for sourcing, framing, edits, and corrections.',
+  },
+  {
+    number: '04',
+    title: 'Corrections stay visible',
+    body: 'Meaningful factual corrections should update the article’s review date. Small wording or formatting changes do not silently become “new” publication dates. Readers can report a problem through the public repository.',
+  },
+];
+---
+
+<BaseLayout
+  title="Editorial Standards"
+  description="How cnjianghu researches, sources, edits, uses AI tools, and corrects its cultural stories."
+>
+  <div class="container-wide py-12 md:py-20">
+    <header class="max-w-5xl">
+      <p class="font-ui text-xs font-semibold uppercase tracking-[0.22em] text-vermilion">
+        Editorial standards
+      </p>
+      <h1 class="mt-5 max-w-4xl text-5xl font-bold leading-[1.02] text-ink-900 dark:text-ink-50 md:text-7xl">
+        How a story earns its place in the jianghu.
+      </h1>
+      <p class="mt-7 max-w-2xl text-xl leading-relaxed text-ink-600 dark:text-ink-300">
+        Cultural writing becomes trustworthy through visible evidence, careful scope,
+        honest uncertainty, and a willingness to correct the record.
+      </p>
+    </header>
+
+    <main class="mt-16">
+      <section class="border-t border-ink-200 dark:border-ink-800">
+        {
+          principles.map((principle) => (
+            <article class="grid gap-4 border-b border-ink-200 py-9 dark:border-ink-800 md:grid-cols-[4rem_minmax(14rem,0.7fr)_minmax(0,1.3fr)] md:gap-8">
+              <span class="font-ui text-xs font-semibold tracking-[0.18em] text-vermilion">
+                {principle.number}
+              </span>
+              <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-50">
+                {principle.title}
+              </h2>
+              <p class="max-w-2xl text-lg leading-relaxed text-ink-600 dark:text-ink-300">
+                {principle.body}
+              </p>
+            </article>
+          ))
+        }
+      </section>
+
+      <section class="mt-16 grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div class="prose m-0">
+          <h2>Evidence posture by format</h2>
+          <p>
+            <strong>Deep Dives</strong> should include at least three meaningful sources,
+            with direct support for quantitative or contested claims.
+          </p>
+          <p>
+            <strong>Quick Bites</strong> are shorter, not evidence-free. Claims about
+            numbers, policy, health, history, or a current trend should still point to
+            an appropriate source.
+          </p>
+          <p>
+            <strong>Glossary entries</strong> vary by evidence type. Language-led terms
+            may rely on usage and reference works; data-led concept notes need explicit
+            official or research baselines.
+          </p>
+          <h2>Dates and review status</h2>
+          <p>
+            The publication date records when a piece first appeared. A separate
+            “last reviewed” date may appear after a substantive source check or factual
+            revision. Cultural context changes; review dates make that maintenance visible.
+          </p>
+        </div>
+
+        <aside class="border-l-2 border-vermilion pl-6">
+          <p class="font-ui text-xs font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+            Spot a problem?
+          </p>
+          <p class="mt-4 leading-relaxed text-ink-600 dark:text-ink-300">
+            Include the page URL, the sentence in question, and a source or explanation
+            when possible.
+          </p>
+          <a
+            href="https://github.com/Mocooa/cnjianghu/issues/new?title=Correction%3A%20"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-5 inline-flex min-h-11 items-center font-ui text-sm font-semibold text-vermilion hover:underline"
+          >
+            Report a correction →
+          </a>
+        </aside>
+      </section>
+    </main>
+  </div>
+</BaseLayout>

@@ -2,51 +2,123 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="About" description="What is cnjianghu? A curated cultural discovery platform for the global Chinamaxing community.">
-  <div class="container-article py-16">
-    <h1 class="text-3xl md:text-4xl font-heading font-bold text-ink-900 dark:text-ink-50 mb-8">
-      About <span class="text-vermilion">cnjianghu</span>
-    </h1>
+<BaseLayout
+  title="About"
+  description="Why cnjianghu exists, what it publishes, and how it approaches cultural explanation."
+>
+  <div class="container-wide py-12 md:py-20">
+    <header class="grid gap-10 border-b border-ink-200 pb-12 dark:border-ink-800 lg:grid-cols-[minmax(0,1.45fr)_minmax(17rem,0.55fr)] lg:items-end">
+      <div class="max-w-4xl">
+        <p class="mb-5 font-ui text-xs font-semibold uppercase tracking-[0.22em] text-vermilion">
+          Independent editorial project
+        </p>
+        <h1 class="max-w-3xl text-5xl font-bold leading-[0.98] text-ink-900 dark:text-ink-50 md:text-7xl">
+          A bridge,<br />not a brochure.
+        </h1>
+        <p class="mt-7 max-w-2xl text-xl leading-relaxed text-ink-600 dark:text-ink-300">
+          cnjianghu explains the China people encounter in ordinary life, online culture,
+          aesthetics, language, and technology—without flattening it into headlines,
+          slogans, or “fun facts.”
+        </p>
+      </div>
 
-    <div class="prose dark:prose-invert">
-      <p class="text-lg">
-        <strong class="font-chinese">江湖</strong> <em>(jiāng hú)</em> — literally "rivers and lakes" — is one of the most evocative concepts in Chinese culture. It refers to the informal, living world that exists beneath official structures: the world of wanderers, storytellers, fighters, merchants, and everyday people navigating life on their own terms.
-      </p>
+      <aside class="border-l-2 border-vermilion pl-5 font-ui text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+        <p class="font-semibold text-ink-900 dark:text-ink-100">
+          江湖 <span class="font-normal italic text-ink-500">(jiāng hú)</span>
+        </p>
+        <p class="mt-2">
+          Literally “rivers and lakes”: the living world beneath formal structures,
+          where culture is practiced, negotiated, remixed, and passed on.
+        </p>
+      </aside>
+    </header>
 
-      <p>
-        <strong>cnjianghu</strong> borrows this spirit. We're not a textbook. We're not a news outlet. We're a curated window into the real, vibrant, messy, beautiful jianghu of Chinese culture — built for people around the world who are genuinely curious.
-      </p>
+    <main class="mt-14 grid gap-x-12 gap-y-16 lg:grid-cols-[13rem_minmax(0,1fr)]">
+      <div class="font-ui text-xs font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+        Why it exists
+      </div>
+      <section class="prose m-0">
+        <p>
+          Global interest in China is growing, but good context remains hard to find.
+          The most useful Chinese-language material is scattered across platforms;
+          English-language coverage often lands at one of two extremes—too thin to explain
+          much, or too academic to enter easily.
+        </p>
+        <p>
+          cnjianghu works in the space between them. It uses stories, scenes, Chinese terms,
+          and visible sources to help curious readers understand not only what something is,
+          but why it makes sense from inside its cultural setting.
+        </p>
+      </section>
 
-      <h2>Why this exists</h2>
+      <div class="font-ui text-xs font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+        What it is—and is not
+      </div>
+      <section class="grid gap-8 border-y border-ink-200 py-9 dark:border-ink-800 md:grid-cols-2">
+        <div>
+          <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-50">It is</h2>
+          <ul class="mt-5 space-y-3 text-lg leading-relaxed text-ink-600 dark:text-ink-300">
+            <li>Curated cultural explanation for an English-speaking reader.</li>
+            <li>An archive of connected stories, concepts, and everyday details.</li>
+            <li>An invitation to stay curious when a simple analogy stops working.</li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-50">It is not</h2>
+          <ul class="mt-5 space-y-3 text-lg leading-relaxed text-ink-600 dark:text-ink-300">
+            <li>A news outlet, tourism guide, or substitute for scholarship.</li>
+            <li>A claim that there is one universal “Chinese perspective.”</li>
+            <li>A polished national image that removes contradiction or change.</li>
+          </ul>
+        </div>
+      </section>
 
-      <p>
-        There's a growing wave of global interest in Chinese culture — sometimes called <em>Chinamaxing</em>. People are discovering Chinese food, internet culture, philosophy, aesthetics, and technology. But they hit a wall: the best content is in Chinese, scattered across dozens of platforms, and often lacks the cultural context that makes it truly understandable.
-      </p>
+      <div class="font-ui text-xs font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+        Editorial principles
+      </div>
+      <section>
+        <ol class="divide-y divide-ink-200 border-y border-ink-200 dark:divide-ink-800 dark:border-ink-800">
+          {
+            [
+              ['01', 'Context before conclusion', 'Explain the social setting and competing interpretations before reducing a subject to one takeaway.'],
+              ['02', 'Specific before sweeping', 'Use a scene, object, word, or documented example instead of speaking for 1.4 billion people.'],
+              ['03', 'Sources before confidence', 'Treat links as evidence to inspect, not decoration added after the writing is finished.'],
+              ['04', 'Curiosity before performance', 'The goal is understanding—not defending, attacking, or turning complexity into a spectacle.'],
+            ].map(([number, title, body]) => (
+              <li class="grid gap-3 py-6 md:grid-cols-[3.5rem_14rem_minmax(0,1fr)] md:items-baseline">
+                <span class="font-ui text-xs font-semibold tracking-[0.16em] text-vermilion">{number}</span>
+                <strong class="font-heading text-xl text-ink-900 dark:text-ink-50">{title}</strong>
+                <span class="text-base leading-relaxed text-ink-600 dark:text-ink-300">{body}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
 
-      <p>
-        cnjianghu bridges that gap. We find the most interesting, insightful, and surprising content about Chinese culture, translate it with cultural context (not just words), and present it in a way that's accessible, engaging, and respectful.
-      </p>
-
-      <h2>Our principles</h2>
-
-      <ul>
-        <li><strong>Authentic over polished</strong> — Real China, not the brochure version</li>
-        <li><strong>Deep over wide</strong> — We'd rather explain one thing well than skim a hundred</li>
-        <li><strong>Story over fact</strong> — Knowledge sticks better when it comes with a story</li>
-        <li><strong>Curiosity over pedagogy</strong> — We spark questions, not lectures</li>
-        <li><strong>Insider perspective</strong> — "Come walk with us" rather than "let us tell you about"</li>
-      </ul>
-
-      <h2>Who makes this</h2>
-
-      <p>
-        cnjianghu is an independent, open-source cultural project. It's built and maintained by a small team of culture enthusiasts who believe that understanding breeds connection, and connection makes the world a little better.
-      </p>
-
-      <p>
-        Want to contribute, suggest content, or just say hello?
-        Find us on <a href="https://github.com/Mocooa/cnjianghu">GitHub</a>.
-      </p>
-    </div>
+      <div class="font-ui text-xs font-semibold uppercase tracking-[0.18em] text-ink-400 dark:text-ink-500">
+        Who makes it
+      </div>
+      <section class="max-w-3xl">
+        <p class="text-xl leading-relaxed text-ink-700 dark:text-ink-200">
+          cnjianghu is an independently created and edited, open-source cultural project.
+          AI tools assist parts of research organization, translation drafting, editing,
+          and production. AI output is never treated as a source, and responsibility for
+          what appears on the site remains with the project.
+        </p>
+        <div class="mt-7 flex flex-wrap gap-x-6 gap-y-3 font-ui text-sm">
+          <a href="/editorial-standards" class="font-semibold text-vermilion hover:underline">
+            Read the editorial standards →
+          </a>
+          <a
+            href="https://github.com/Mocooa/cnjianghu"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-ink-600 hover:text-vermilion dark:text-ink-300"
+          >
+            View the open-source project
+          </a>
+        </div>
+      </section>
+    </main>
   </div>
 </BaseLayout>

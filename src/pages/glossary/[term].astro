@@ -26,6 +26,13 @@ const context = getGlossaryContext(entry);
 const evidenceLabel = formatEvidenceType(entry.data.evidence_type);
 const exploreDossierHref = getExploreDossierHref(context.pillar.slug, context.dossier);
 const archiveMapDossierHref = getArchiveMapDossierHref(context.pillar.slug, context.dossier);
+const formattedReviewDate = entry.data.last_reviewed
+  ? new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(entry.data.last_reviewed)
+  : null;
 ---
 
 <BaseLayout
@@ -120,6 +127,18 @@ const archiveMapDossierHref = getArchiveMapDossierHref(context.pillar.slug, cont
           </span>
         ))}
       </div>
+
+      {(formattedReviewDate || entry.data.ai_assisted) && (
+        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 font-ui text-xs text-ink-400 dark:text-ink-500" data-pagefind-ignore>
+          {formattedReviewDate && <span>Last reviewed {formattedReviewDate}</span>}
+          {formattedReviewDate && entry.data.ai_assisted && <span aria-hidden="true">·</span>}
+          {entry.data.ai_assisted && (
+            <a href="/editorial-standards" class="hover:text-vermilion hover:underline">
+              AI-assisted editorial workflow
+            </a>
+          )}
+        </div>
+      )}
     </header>
 
     <section class="mb-10 grid gap-3 md:grid-cols-3" data-pagefind-ignore>

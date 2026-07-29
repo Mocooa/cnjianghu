@@ -34,6 +34,13 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
   year: 'numeric',
 }).format(bite.data.date);
+const formattedReviewDate = bite.data.last_reviewed
+  ? new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(bite.data.last_reviewed)
+  : null;
 ---
 
 <BaseLayout title={bite.data.title} description={bite.data.summary} ogType="article" ogImage={`/og/quick-bites/${bite.id}.png`} searchIndex={true}>
@@ -88,6 +95,18 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
         <span>{bite.data.reading_time} min read</span>
       </div>
 
+      {(formattedReviewDate || bite.data.ai_assisted) && (
+        <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-ui text-xs text-ink-400 dark:text-ink-500" data-pagefind-ignore>
+          {formattedReviewDate && <span>Last reviewed {formattedReviewDate}</span>}
+          {formattedReviewDate && bite.data.ai_assisted && <span aria-hidden="true">·</span>}
+          {bite.data.ai_assisted && (
+            <a href="/editorial-standards" class="hover:text-vermilion hover:underline">
+              AI-assisted editorial workflow
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Tags */}
       {bite.data.tags.length > 0 && (
         <div class="mt-4 flex flex-wrap gap-2">
@@ -104,6 +123,31 @@ const formattedDate = new Intl.DateTimeFormat('en-US', {
     <div class="container-article prose dark:prose-invert">
       <Content />
     </div>
+
+    {bite.data.sources && bite.data.sources.length > 0 && (
+      <footer class="container-article mt-12 border-t border-ink-200 pt-8 dark:border-ink-800" data-pagefind-ignore>
+        <h2 class="mb-3 font-ui text-sm font-semibold uppercase tracking-wider text-ink-500 dark:text-ink-400">
+          Sources & Further Reading
+        </h2>
+        <ul class="space-y-2">
+          {bite.data.sources.map((source) => (
+            <li class="font-ui text-sm">
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-vermilion hover:underline"
+              >
+                {source.title}
+              </a>
+              {source.platform && (
+                <span class="ml-1 text-ink-400 dark:text-ink-500">— {source.platform}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </footer>
+    )}
 
     {/* Back link */}
     <div class="container-article mt-12 pt-8 border-t border-ink-200 dark:border-ink-800" data-pagefind-ignore>
